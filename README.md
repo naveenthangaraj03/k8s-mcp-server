@@ -49,7 +49,7 @@ Add the following configuration to yours claude config file.
     "mcpServers": {
         "Kubernetes": {
             "command": "k8s-mcp-server",
-            "args": [ "<Path to kubeconfig file>"]
+            "args": ["--kubeconfigPath=<Path to kubeconfig file>"]
         }
     }
 }
