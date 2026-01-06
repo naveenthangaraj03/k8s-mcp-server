@@ -36,7 +36,7 @@ All interactions are performed via Kubernetes API using the provided kubeconfig.
 ### Installation
 
 ```
-go install github.com/<your-username>/k8s-mcp-server@latest
+go install github.com/naveenthangaraj03/k8s-mcp-server@latest
 ```
 
 ### Running MCP Server
