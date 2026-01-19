@@ -1153,3 +1153,26 @@ var GetSC = mcp.NewTool(
 		mcp.Description("Name of the storageClass to get"),
 	),
 )
+
+var Custom = mcp.NewTool(
+        "custom",
+        mcp.WithDescription("Working with custom resource"),
+        mcp.WithString(
+                "kind",
+                mcp.Required(),
+                mcp.Description("kind of the custom resource"),
+        ),
+	 mcp.WithString(
+                "method",
+                mcp.Required(),
+                mcp.Description("method to work on that custom resource"),
+        ),
+	 mcp.WithString(
+                "name",
+                mcp.Description("name of the custom resource"),
+        ),
+	mcp.WithString(
+                "namespace",
+                mcp.Description("namespace in which custom resource exits"),
+        ),
+)

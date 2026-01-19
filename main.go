@@ -22,6 +22,7 @@ import (
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/clusterrole"
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/clusterrolebinding"
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/storageclass"
+	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/custom"
 )
 
 
@@ -133,6 +134,8 @@ func main() {
 
 	s.AddTool(tools.ListSC, storageclass.ListSC)
 	s.AddTool(tools.GetSC, storageclass.GetSC)
+
+	s.AddTool(tools.Custom, custom.Custom)
 
     if err := server.ServeStdio(s); err != nil {
         fmt.Printf("Error starting server: %v\n", err)
