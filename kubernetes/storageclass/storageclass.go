@@ -1,18 +1,18 @@
 package storageclass
 
 import (
-	"fmt"
 	"context"
 	"encoding/json"
+	"fmt"
+	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"github.com/mark3labs/mcp-go/mcp"
 )
 
-type scData struct{
-	Name            string              `json:"name,omitempty"`
-	Provisioner     string              `json:"provisioner,omitempty"`
-	ReclaimPolicy   string              `json:"reclaimPolicy,omitempty"`
+type scData struct {
+	Name          string `json:"name,omitempty"`
+	Provisioner   string `json:"provisioner,omitempty"`
+	ReclaimPolicy string `json:"reclaimPolicy,omitempty"`
 }
 
 func ListSC(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -25,7 +25,7 @@ func ListSC(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResu
 		return mcp.NewToolResultText(fmt.Sprintf("Error in listing storageclass: %v", err)), nil
 	}
 	var output []scData
-	for _, sclass:= range sc.Items {
+	for _, sclass := range sc.Items {
 		output = append(output, scData{
 			Name: sclass.Name,
 		})
@@ -52,11 +52,11 @@ func GetSC(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResul
 		return mcp.NewToolResultText(fmt.Sprintf("Error in getting storageclass %s: %v", name, err)), nil
 	}
 	output := scData{
-		Name: sc.Name,
-		Provisioner: sc.Provisioner,
-		ReclaimPolicy: string(*sc.ReclaimPolicy),	
+		Name:          sc.Name,
+		Provisioner:   sc.Provisioner,
+		ReclaimPolicy: string(*sc.ReclaimPolicy),
 	}
-	
+
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil

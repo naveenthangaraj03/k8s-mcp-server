@@ -1,13 +1,13 @@
 package node
 
 import (
-	"fmt"
 	"context"
 	"encoding/json"
-	"strings"
+	"fmt"
+	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"github.com/mark3labs/mcp-go/mcp"
+	"strings"
 )
 
 type nodeData struct {
@@ -19,7 +19,7 @@ type nodeData struct {
 	Architecture      string `json:"architecture,omitempty"`
 }
 
-func ListNode (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func ListNode(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	clientset, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
@@ -33,7 +33,7 @@ func ListNode (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolR
 		var nodeStatus string
 		for _, v := range node.Status.Conditions {
 			if v.Type == "Ready" {
-				if v.Status == "True"{
+				if v.Status == "True" {
 					nodeStatus = "Ready"
 				} else {
 					nodeStatus = "NotReady"
@@ -41,7 +41,7 @@ func ListNode (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolR
 			}
 		}
 		output = append(output, nodeData{
-			Name: node.Name,
+			Name:   node.Name,
 			Status: nodeStatus,
 		})
 	}
@@ -52,7 +52,7 @@ func ListNode (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolR
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func GetNode (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func GetNode(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	name, err := request.RequireString("name")
 	if err != nil {
 		output := fmt.Sprintf("Provide name for node")
@@ -69,7 +69,7 @@ func GetNode (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRe
 	var nodeStatus string
 	for _, v := range node.Status.Conditions {
 		if v.Type == "Ready" {
-			if v.Status == "True"{
+			if v.Status == "True" {
 				nodeStatus = "Ready"
 			} else {
 				nodeStatus = "NotReady"
@@ -77,12 +77,12 @@ func GetNode (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRe
 		}
 	}
 	output := nodeData{
-		Name: node.Name,
-		Status: nodeStatus,
+		Name:              node.Name,
+		Status:            nodeStatus,
 		KubernetesVersion: node.Status.NodeInfo.KubeletVersion,
-		OS: node.Status.NodeInfo.OSImage,
-		KernelVersion: node.Status.NodeInfo.KernelVersion,
-		Architecture: node.Status.NodeInfo.Architecture,
+		OS:                node.Status.NodeInfo.OSImage,
+		KernelVersion:     node.Status.NodeInfo.KernelVersion,
+		Architecture:      node.Status.NodeInfo.Architecture,
 	}
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
 	if err != nil {
@@ -91,7 +91,7 @@ func GetNode (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRe
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func DeleteNode (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func DeleteNode(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	name, err := request.RequireString("name")
 	if err != nil {
 		output := fmt.Sprintf("Provide name for node")
@@ -109,7 +109,7 @@ func DeleteNode (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToo
 	return mcp.NewToolResultText(string(output)), nil
 }
 
-func UpdateNode (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func UpdateNode(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	name, err := request.RequireString("name")
 	if err != nil {
 		output := fmt.Sprintf("Provide name for node")

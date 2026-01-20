@@ -1,13 +1,13 @@
 package pv
 
 import (
-	"fmt"
 	"context"
 	"encoding/json"
-	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/api/core/v1"
+	"fmt"
 	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type pvData struct {
@@ -32,10 +32,10 @@ func ListPV(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResu
 	for _, pv := range pvolume.Items {
 		qty := pv.Spec.Capacity[v1.ResourceStorage]
 		output = append(output, pvData{
-			Name: pv.Name,
+			Name:      pv.Name,
 			Namespace: pv.Namespace,
-			Capacity: qty.String(),
-			Status: string(pv.Status.Phase),
+			Capacity:  qty.String(),
+			Status:    string(pv.Status.Phase),
 		})
 	}
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
@@ -65,14 +65,14 @@ func GetPV(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResul
 		accMode = append(accMode, string(mode))
 	}
 	qty := pv.Spec.Capacity[v1.ResourceStorage]
-	
+
 	output := pvData{
-		Name: pv.Name,
-		Namespace: pv.Namespace,
-		Capacity: qty.String(),
-		AccessMode: accMode,
+		Name:         pv.Name,
+		Namespace:    pv.Namespace,
+		Capacity:     qty.String(),
+		AccessMode:   accMode,
 		StorageClass: pv.Spec.StorageClassName,
-		Status: string(pv.Status.Phase),
+		Status:       string(pv.Status.Phase),
 	}
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
 	if err != nil {

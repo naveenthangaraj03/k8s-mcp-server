@@ -1,32 +1,32 @@
 package rolebinding
 
 import (
-	"fmt"
 	"context"
 	"encoding/json"
+	"fmt"
+	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"github.com/mark3labs/mcp-go/mcp"
 )
 
 type rbData struct {
-	Name         string      `json:"name,omitempty"`
-	Namespace    string      `json:"namespace,omitempty"`
-	RoleRef      roleRef     `json:"roleRef,omitempty"`
-	Subjects     []subjects  `json:"subjects,omitempty"`
+	Name      string     `json:"name,omitempty"`
+	Namespace string     `json:"namespace,omitempty"`
+	RoleRef   roleRef    `json:"roleRef,omitempty"`
+	Subjects  []subjects `json:"subjects,omitempty"`
 }
 
 type roleRef struct {
-	ApiGroup     string  `json:"apiGroup,omitempty"`
-	Kind         string  `json:"kind,omitempty"`
-	Name         string  `json:"name,omitempty"`
+	ApiGroup string `json:"apiGroup,omitempty"`
+	Kind     string `json:"kind,omitempty"`
+	Name     string `json:"name,omitempty"`
 }
 
 type subjects struct {
-	ApiGroup    string  `json:"apiGroup,omitempty"`
-	Kind        string  `json:"kind,omitempty"`
-	Name        string  `json:"name,omitempty"`
-	Namespace   string  `json:"namespace,omitempty"`
+	ApiGroup  string `json:"apiGroup,omitempty"`
+	Kind      string `json:"kind,omitempty"`
+	Name      string `json:"name,omitempty"`
+	Namespace string `json:"namespace,omitempty"`
 }
 
 func ListRBInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -46,7 +46,7 @@ func ListRBInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTool
 	var output []rbData
 	for _, rb := range rbs.Items {
 		output = append(output, rbData{
-			Name: rb.Name,
+			Name:      rb.Name,
 			Namespace: rb.Namespace,
 		})
 	}
@@ -72,10 +72,10 @@ func ListRB(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResu
 		if err != nil {
 			return mcp.NewToolResultText(fmt.Sprintf("Error in listing rolebinding in namespace %s: %v", namespace.Name, err)), nil
 		}
-		
+
 		for _, rb := range rbs.Items {
 			output = append(output, rbData{
-				Name: rb.Name,
+				Name:      rb.Name,
 				Namespace: rb.Namespace,
 			})
 		}
@@ -111,9 +111,9 @@ func GetRB(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResul
 
 	for _, rolebind := range rb.Subjects {
 		saDetails = append(saDetails, subjects{
-			ApiGroup: rolebind.APIGroup,
-			Kind: rolebind.Kind,
-			Name: rolebind.Name,
+			ApiGroup:  rolebind.APIGroup,
+			Kind:      rolebind.Kind,
+			Name:      rolebind.Name,
 			Namespace: rolebind.Namespace,
 		})
 	}
@@ -121,15 +121,15 @@ func GetRB(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResul
 	var rRef roleRef
 	rRef = roleRef{
 		ApiGroup: rb.RoleRef.APIGroup,
-		Kind: rb.RoleRef.Kind,
-		Name: rb.RoleRef.Name,
+		Kind:     rb.RoleRef.Kind,
+		Name:     rb.RoleRef.Name,
 	}
-	
+
 	output := rbData{
-		Name: rb.Name,
+		Name:      rb.Name,
 		Namespace: rb.Namespace,
-		RoleRef: rRef,
-	    Subjects: saDetails,
+		RoleRef:   rRef,
+		Subjects:  saDetails,
 	}
 
 	mcpOutput, err := json.MarshalIndent(output, "", " ")

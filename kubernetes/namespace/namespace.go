@@ -1,14 +1,14 @@
 package namespace
 
 import (
-	"fmt"
 	"context"
 	"encoding/json"
-	"strings"
-	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/api/core/v1"
+	"fmt"
 	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
 )
 
 type namespaceData struct {
@@ -16,7 +16,7 @@ type namespaceData struct {
 	Status string `json:"status,omitempty"`
 }
 
-func ListNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func ListNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	clientset, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
@@ -28,7 +28,7 @@ func ListNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRes
 	var output []namespaceData
 	for _, namespace := range namespaces.Items {
 		output = append(output, namespaceData{
-			Name: namespace.Name,
+			Name:   namespace.Name,
 			Status: string(namespace.Status.Phase),
 		})
 	}
@@ -39,7 +39,7 @@ func ListNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRes
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func GetNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func GetNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	name, err := request.RequireString("name")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace name to get")
@@ -54,7 +54,7 @@ func GetNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResu
 		return mcp.NewToolResultText(fmt.Sprintf("Error in gettting the namespace %s: %v", name, err)), nil
 	}
 	output := namespaceData{
-		Name: namespace.Name,
+		Name:   namespace.Name,
 		Status: string(namespace.Status.Phase),
 	}
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
@@ -64,7 +64,7 @@ func GetNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResu
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func DeleteNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func DeleteNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	name, err := request.RequireString("name")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace name to delete")
@@ -82,7 +82,7 @@ func DeleteNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolR
 	return mcp.NewToolResultText(string(output)), nil
 }
 
-func UpdateNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func UpdateNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	name, err := request.RequireString("name")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace name to update")
@@ -133,14 +133,14 @@ func UpdateNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolR
 		if err != nil {
 			return mcp.NewToolResultText(fmt.Sprintf("Error in updating namespace %s with annotation %s: %v", name, annotation, err)), nil
 		}
-		output := fmt.Sprintf("Successfully namespace %s updated with annotaion %s",  updateNamespace.Name, annotation)
+		output := fmt.Sprintf("Successfully namespace %s updated with annotaion %s", updateNamespace.Name, annotation)
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	output := fmt.Sprintf("Mentioned update in namespace %s is not possible, we are supporting labelling and  annotating",  name)
+	output := fmt.Sprintf("Mentioned update in namespace %s is not possible, we are supporting labelling and  annotating", name)
 	return mcp.NewToolResultText(string(output)), nil
 }
 
-func CreateNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func CreateNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	name, err := request.RequireString("name")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace name to create")
@@ -167,8 +167,8 @@ func CreateNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolR
 
 	namespace := &v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
-		    Labels: lab,
+			Name:   name,
+			Labels: lab,
 		},
 	}
 
@@ -176,6 +176,6 @@ func CreateNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolR
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in creating namespace %s: %v", name, err)), nil
 	}
-	output := fmt.Sprintf("Successfully namespace %s is created",  createNamespace.Name)
+	output := fmt.Sprintf("Successfully namespace %s is created", createNamespace.Name)
 	return mcp.NewToolResultText(string(output)), nil
 }

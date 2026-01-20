@@ -1,14 +1,14 @@
 package serviceaccount
 
 import (
-	"fmt"
 	"context"
 	"encoding/json"
-	"strings"
+	"fmt"
+	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"github.com/mark3labs/mcp-go/mcp"
+	"strings"
 )
 
 type saData struct {
@@ -17,7 +17,7 @@ type saData struct {
 	Labels    map[string]string `json:"labels,omitempty"`
 }
 
-func ListSAInNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func ListSAInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for service account")
@@ -38,9 +38,9 @@ func ListSAInNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToo
 	var output []saData
 	for _, sa := range sAccount.Items {
 		output = append(output, saData{
-			Name: sa.Name,
+			Name:      sa.Name,
 			Namespace: sa.Namespace,
-			Labels: sa.Labels,
+			Labels:    sa.Labels,
 		})
 	}
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
@@ -50,7 +50,7 @@ func ListSAInNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToo
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func ListSA (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func ListSA(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	labels := request.GetString("label", "")
 
 	clientset, err := client.InitializeClients()
@@ -69,12 +69,12 @@ func ListSA (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRes
 		if err != nil {
 			return mcp.NewToolResultText(fmt.Sprintf("Error in listing service accounts in %s: %v", namespace.Name, err)), nil
 		}
-		
+
 		for _, sa := range sAccount.Items {
 			output = append(output, saData{
-				Name: sa.Name,
+				Name:      sa.Name,
 				Namespace: sa.Namespace,
-				Labels: sa.Labels,
+				Labels:    sa.Labels,
 			})
 		}
 	}
@@ -85,7 +85,7 @@ func ListSA (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRes
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func GetSA (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func GetSA(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for service account")
@@ -105,13 +105,12 @@ func GetSA (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResu
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in getting service accounts in %s/%s: %v", ns, name, err)), nil
 	}
-	
-	output := saData{
-		Name: sAccount.Name,
-		Namespace: sAccount.Namespace,
-		Labels: sAccount.Labels,
-	}
 
+	output := saData{
+		Name:      sAccount.Name,
+		Namespace: sAccount.Namespace,
+		Labels:    sAccount.Labels,
+	}
 
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
 	if err != nil {
@@ -120,7 +119,7 @@ func GetSA (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResu
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func DeleteSA (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func DeleteSA(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for service account")
@@ -144,7 +143,7 @@ func DeleteSA (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolR
 	return mcp.NewToolResultText(string(output)), nil
 }
 
-func CreateSA (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func CreateSA(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	name, err := request.RequireString("name")
 	if err != nil {
 		output := fmt.Sprintf("Provide name to create Service account")
@@ -176,15 +175,15 @@ func CreateSA (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolR
 
 	serviceaccount := &v1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
+			Name:      name,
 			Namespace: ns,
-		    Labels: lab,
+			Labels:    lab,
 		},
 	}
 
 	createServiceAccount, err := clientset.CoreV1().ServiceAccounts(ns).Create(context.TODO(), serviceaccount, metav1.CreateOptions{})
 	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in creating service account %s/%s: %v", ns , name, err)), nil
+		return mcp.NewToolResultText(fmt.Sprintf("Error in creating service account %s/%s: %v", ns, name, err)), nil
 	}
 	output := fmt.Sprintf("Successfully serviceAccount %s/%s is created", createServiceAccount.Namespace, createServiceAccount.Name)
 	return mcp.NewToolResultText(string(output)), nil

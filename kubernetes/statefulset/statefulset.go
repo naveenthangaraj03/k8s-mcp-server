@@ -1,20 +1,20 @@
 package statefulset
 
 import (
-	"fmt"
 	"context"
 	"encoding/json"
-	"strings"
-	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/api/core/v1"
-	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/apimachinery/pkg/api/resource"
+	"fmt"
 	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
+	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	"strings"
 )
 
-type stsData struct{
+type stsData struct {
 	Name              string            `json:"name,omitempty"`
 	Namespace         string            `json:"namespace,omitempty"`
 	AvailableInstance string            `json:"availableInstance,omitempty"`
@@ -23,7 +23,7 @@ type stsData struct{
 	ContainerImage    []string          `json:"containerImage,omitempty"`
 }
 
-func ListStatefulsetInNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func ListStatefulsetInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for statefulset")
@@ -36,7 +36,7 @@ func ListStatefulsetInNS (ctx context.Context, request mcp.CallToolRequest) (*mc
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
 	statefulsets, err := clientset.AppsV1().StatefulSets(ns).List(context.TODO(), metav1.ListOptions{
-		LabelSelector: labels,	
+		LabelSelector: labels,
 	})
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in listing statefulset in %s: %v", ns, err)), nil
@@ -44,10 +44,10 @@ func ListStatefulsetInNS (ctx context.Context, request mcp.CallToolRequest) (*mc
 	var output []stsData
 	for _, statefulset := range statefulsets.Items {
 		output = append(output, stsData{
-			Name: statefulset.Name,
-			Namespace: statefulset.Namespace,
-			AvailableInstance: fmt.Sprintf(	"%d/%d", statefulset.Status.AvailableReplicas, *statefulset.Spec.Replicas,),
-			Labels: statefulset.Labels,
+			Name:              statefulset.Name,
+			Namespace:         statefulset.Namespace,
+			AvailableInstance: fmt.Sprintf("%d/%d", statefulset.Status.AvailableReplicas, *statefulset.Spec.Replicas),
+			Labels:            statefulset.Labels,
 		})
 	}
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
@@ -57,7 +57,7 @@ func ListStatefulsetInNS (ctx context.Context, request mcp.CallToolRequest) (*mc
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func ListStatefulset (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func ListStatefulset(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	labels := request.GetString("label", "")
 
 	clientset, err := client.InitializeClients()
@@ -78,12 +78,12 @@ func ListStatefulset (ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 		}
 		for _, statefulset := range statefulsets.Items {
 			output = append(output, stsData{
-				Name: statefulset.Name,
-				Namespace: statefulset.Namespace,
-				AvailableInstance: fmt.Sprintf(	"%d/%d", statefulset.Status.AvailableReplicas, *statefulset.Spec.Replicas,),
-				Labels: statefulset.Labels,
+				Name:              statefulset.Name,
+				Namespace:         statefulset.Namespace,
+				AvailableInstance: fmt.Sprintf("%d/%d", statefulset.Status.AvailableReplicas, *statefulset.Spec.Replicas),
+				Labels:            statefulset.Labels,
 			})
-		}	
+		}
 	}
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
 	if err != nil {
@@ -92,7 +92,7 @@ func ListStatefulset (ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func GetStatefulset (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func GetStatefulset(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for statefulset")
@@ -120,12 +120,12 @@ func GetStatefulset (ctx context.Context, request mcp.CallToolRequest) (*mcp.Cal
 	}
 
 	output := stsData{
-		Name: statefulset.Name,
-		Namespace: statefulset.Namespace,
-		AvailableInstance: fmt.Sprintf(	"%d/%d", statefulset.Status.AvailableReplicas, *statefulset.Spec.Replicas,),
-		Labels: statefulset.Labels,
-		ContainerName: cName,
-		ContainerImage: cImage,
+		Name:              statefulset.Name,
+		Namespace:         statefulset.Namespace,
+		AvailableInstance: fmt.Sprintf("%d/%d", statefulset.Status.AvailableReplicas, *statefulset.Spec.Replicas),
+		Labels:            statefulset.Labels,
+		ContainerName:     cName,
+		ContainerImage:    cImage,
 	}
 
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
@@ -135,7 +135,7 @@ func GetStatefulset (ctx context.Context, request mcp.CallToolRequest) (*mcp.Cal
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func DeleteStatefulset (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func DeleteStatefulset(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for statefulset")
@@ -159,7 +159,7 @@ func DeleteStatefulset (ctx context.Context, request mcp.CallToolRequest) (*mcp.
 	return mcp.NewToolResultText(string(output)), nil
 }
 
-func UpdateStatefulset (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func UpdateStatefulset(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for statefulset")
@@ -226,7 +226,7 @@ func UpdateStatefulset (ctx context.Context, request mcp.CallToolRequest) (*mcp.
 			statefulset.Spec.Template.Spec.Containers[0].Image = image
 			updateStatefulset, err := clientset.AppsV1().StatefulSets(ns).Update(context.TODO(), statefulset, metav1.UpdateOptions{})
 			if err != nil {
-				return mcp.NewToolResultText(fmt.Sprintf("Error in updating statefulset %s/%s with image %s: %v", ns, name, image,  err)), nil
+				return mcp.NewToolResultText(fmt.Sprintf("Error in updating statefulset %s/%s with image %s: %v", ns, name, image, err)), nil
 			}
 			output := fmt.Sprintf("Successfully statefulset %s/%s updated with image %s", updateStatefulset.Namespace, updateStatefulset.Name, image)
 			return mcp.NewToolResultText(string(output)), nil
@@ -237,13 +237,13 @@ func UpdateStatefulset (ctx context.Context, request mcp.CallToolRequest) (*mcp.
 			} else {
 				var index int = -1
 				for i, c := range statefulset.Spec.Template.Spec.Containers {
-					if c.Name == containerName{
-						index = i 
+					if c.Name == containerName {
+						index = i
 						break
 					}
 				}
 				if index == -1 {
-					output := fmt.Sprintf("Container name %s is not found in statefulset %s/%s ",containerName, ns, name)
+					output := fmt.Sprintf("Container name %s is not found in statefulset %s/%s ", containerName, ns, name)
 					return mcp.NewToolResultText(string(output)), nil
 				} else {
 					statefulset.Spec.Template.Spec.Containers[index].Image = image
@@ -271,13 +271,13 @@ func UpdateStatefulset (ctx context.Context, request mcp.CallToolRequest) (*mcp.
 	return mcp.NewToolResultText(string(output)), nil
 }
 
-func CreateStatefulset (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func CreateStatefulset(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for statefulset")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	name,err := request.RequireString("name")
+	name, err := request.RequireString("name")
 	if err != nil {
 		output := fmt.Sprintf("Provide name for statefulset")
 		return mcp.NewToolResultText(string(output)), nil
@@ -290,7 +290,7 @@ func CreateStatefulset (ctx context.Context, request mcp.CallToolRequest) (*mcp.
 		output := fmt.Sprintf("Provide image for statefulset")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	containerPort  := request.GetInt("containerPorts", 8080)
+	containerPort := request.GetInt("containerPorts", 8080)
 	storageValue, err := request.RequireString("storageValue")
 	if err != nil {
 		output := fmt.Sprintf("Provide storage value for statefulset")
@@ -302,7 +302,7 @@ func CreateStatefulset (ctx context.Context, request mcp.CallToolRequest) (*mcp.
 		return mcp.NewToolResultText(string(output)), nil
 	}
 	pvcName := request.GetString("pvcName", name)
-	svcPort  := request.GetInt("svcPort", 8080)
+	svcPort := request.GetInt("svcPort", 8080)
 	svcType := request.GetString("svcType", "ClusterIP")
 	clientset, err := client.InitializeClients()
 	if err != nil {
@@ -323,7 +323,7 @@ func CreateStatefulset (ctx context.Context, request mcp.CallToolRequest) (*mcp.
 			}
 		}
 	}
-	
+
 	if len(lab) == 0 {
 		lab["app"] = name
 	}
@@ -353,59 +353,59 @@ func CreateStatefulset (ctx context.Context, request mcp.CallToolRequest) (*mcp.
 	}
 
 	statefulset := &appsv1.StatefulSet{
-        ObjectMeta: metav1.ObjectMeta{
-			Name: name,
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
 			Namespace: ns,
-        },
-        Spec: appsv1.StatefulSetSpec{
-            ServiceName: name,
-            Replicas:    &dsReplica,
-            Selector: &metav1.LabelSelector{
-                MatchLabels: lab,
-            },
-            Template: v1.PodTemplateSpec{
-                ObjectMeta: metav1.ObjectMeta{
-                    Labels: lab,
-                },
-                Spec: v1.PodSpec{
-                    Containers: []v1.Container{
-                        {
-                            Name:  containerName,
-                            Image: containerImage,
-                            Ports: []v1.ContainerPort{
-                                {
-                                    ContainerPort: int32(containerPort),
-                                    Name:          name,
-                                },
-                            },
-                            VolumeMounts: []v1.VolumeMount{
-                                {
-                                    Name:      pvcName,
-                                    MountPath: mountPath,
-                                },
-                            },
-                        },
-                    },
-                },
-            },
-            VolumeClaimTemplates: []v1.PersistentVolumeClaim{
-                {
-                    ObjectMeta: metav1.ObjectMeta{
-                        Name: pvcName,
-                    },
-                    Spec: v1.PersistentVolumeClaimSpec{
-                        AccessModes: []v1.PersistentVolumeAccessMode{
-                            v1.ReadWriteOnce,
-                        },
-                        Resources: v1.VolumeResourceRequirements{
-                            Requests: v1.ResourceList{
-                                v1.ResourceStorage: resource.MustParse(storageValue),
-                            },
-                        },
-                    },
-                },
-            },
-        },
+		},
+		Spec: appsv1.StatefulSetSpec{
+			ServiceName: name,
+			Replicas:    &dsReplica,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: lab,
+			},
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: lab,
+				},
+				Spec: v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Name:  containerName,
+							Image: containerImage,
+							Ports: []v1.ContainerPort{
+								{
+									ContainerPort: int32(containerPort),
+									Name:          name,
+								},
+							},
+							VolumeMounts: []v1.VolumeMount{
+								{
+									Name:      pvcName,
+									MountPath: mountPath,
+								},
+							},
+						},
+					},
+				},
+			},
+			VolumeClaimTemplates: []v1.PersistentVolumeClaim{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: pvcName,
+					},
+					Spec: v1.PersistentVolumeClaimSpec{
+						AccessModes: []v1.PersistentVolumeAccessMode{
+							v1.ReadWriteOnce,
+						},
+						Resources: v1.VolumeResourceRequirements{
+							Requests: v1.ResourceList{
+								v1.ResourceStorage: resource.MustParse(storageValue),
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	deployStatefulset, err := clientset.AppsV1().StatefulSets(ns).Create(context.TODO(), statefulset, metav1.CreateOptions{})
 	if err != nil {

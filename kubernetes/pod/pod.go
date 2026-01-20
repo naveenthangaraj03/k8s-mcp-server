@@ -1,24 +1,24 @@
 package pod
 
 import (
-	"fmt"
 	"context"
 	"encoding/json"
-	"io"
-	"strings"
-	"strconv"
-	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/api/core/v1"
+	"fmt"
 	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
+	"io"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strconv"
+	"strings"
 )
 
 type podData struct {
-	Name      string            `json:"name,omitempty"`
-	Namespace string            `json:"namespace,omitempty"`
-	Status    string            `json:"status,omitempty"`
-	Labels    map[string]string `json:"labels,omitempty"`
-	ContainerName []string      `json:"containerNames,omitempty"`
+	Name          string            `json:"name,omitempty"`
+	Namespace     string            `json:"namespace,omitempty"`
+	Status        string            `json:"status,omitempty"`
+	Labels        map[string]string `json:"labels,omitempty"`
+	ContainerName []string          `json:"containerNames,omitempty"`
 }
 
 func ListPodInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -42,10 +42,10 @@ func ListPodInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToo
 	var output []podData
 	for _, pod := range pods.Items {
 		output = append(output, podData{
-			Name: pod.Name,
+			Name:      pod.Name,
 			Namespace: pod.Namespace,
-			Status: string(pod.Status.Phase),
-			Labels: pod.Labels,
+			Status:    string(pod.Status.Phase),
+			Labels:    pod.Labels,
 		})
 	}
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
@@ -55,7 +55,7 @@ func ListPodInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToo
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func ListPod (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func ListPod(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	labels := request.GetString("label", "")
 	clientset, err := client.InitializeClients()
 	if err != nil {
@@ -77,10 +77,10 @@ func ListPod (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRe
 
 		for _, pod := range pods.Items {
 			output = append(output, podData{
-				Name: pod.Name,
+				Name:      pod.Name,
 				Namespace: pod.Namespace,
-				Status: string(pod.Status.Phase),
-				Labels: pod.Labels,
+				Status:    string(pod.Status.Phase),
+				Labels:    pod.Labels,
 			})
 		}
 	}
@@ -91,7 +91,7 @@ func ListPod (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRe
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func GetPod (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func GetPod(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for pod")
@@ -112,19 +112,19 @@ func GetPod (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRes
 	}
 
 	cName := make([]string, 0, len(pod.Spec.Containers))
-	
+
 	for _, container := range pod.Spec.Containers {
 		cName = append(cName, container.Name)
 	}
 
 	output := podData{
-		Name: pod.Name,
-		Namespace: pod.Namespace,
-		Status: string(pod.Status.Phase),
-		Labels: pod.Labels,
+		Name:          pod.Name,
+		Namespace:     pod.Namespace,
+		Status:        string(pod.Status.Phase),
+		Labels:        pod.Labels,
 		ContainerName: cName,
 	}
-	
+
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
@@ -132,7 +132,7 @@ func GetPod (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRes
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func DeletePod (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func DeletePod(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for pod")
@@ -155,7 +155,7 @@ func DeletePod (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTool
 	return mcp.NewToolResultText(string(output)), nil
 }
 
-func UpdatePod (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func UpdatePod(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for pod")
@@ -198,13 +198,13 @@ func UpdatePod (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTool
 	return mcp.NewToolResultText(string(output)), nil
 }
 
-func CreatePod (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func CreatePod(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for pod")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	name,err := request.RequireString("name")
+	name, err := request.RequireString("name")
 	if err != nil {
 		output := fmt.Sprintf("Provide name for pod")
 		return mcp.NewToolResultText(string(output)), nil
@@ -253,25 +253,25 @@ func CreatePod (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTool
 		var ports []v1.ContainerPort
 		if i < len(cPorts) && cPorts[i] != "" {
 			portDefs := strings.Split(cPorts[i], "|")
-	
+
 			for _, pd := range portDefs {
 				parts := strings.SplitN(strings.TrimSpace(pd), ":", 2)
 				if len(parts) != 2 {
 					continue
 				}
-	
+
 				portNum, err := strconv.Atoi(parts[1])
 				if err != nil {
 					continue
 				}
-	
+
 				ports = append(ports, v1.ContainerPort{
 					Name:          strings.TrimSpace(parts[0]),
 					ContainerPort: int32(portNum),
 				})
 			}
 		}
-	
+
 		if len(ports) == 0 {
 			ports = append(ports, v1.ContainerPort{
 				ContainerPort: 8080,
@@ -285,13 +285,13 @@ func CreatePod (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTool
 	}
 
 	pod := &v1.Pod{
-        ObjectMeta: metav1.ObjectMeta{
-            Name: name,
-            Namespace: ns,
-        },
-        Spec: v1.PodSpec{
-            Containers: containers,
-        },
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: ns,
+		},
+		Spec: v1.PodSpec{
+			Containers: containers,
+		},
 	}
 	createPod, err := clientset.CoreV1().Pods(ns).Create(context.TODO(), pod, metav1.CreateOptions{})
 	if err != nil {
@@ -301,27 +301,27 @@ func CreatePod (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTool
 	return mcp.NewToolResultText(string(output)), nil
 }
 
-func PodLog (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func PodLog(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for pod")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	name,err := request.RequireString("name")
+	name, err := request.RequireString("name")
 	if err != nil {
 		output := fmt.Sprintf("Provide name for pod")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	tailLine  := request.GetInt("tailLine", 100)
+	tailLine := request.GetInt("tailLine", 100)
 	containerName, err := request.RequireString("containerName")
 	if err != nil {
 		output := fmt.Sprintf("Provide container name for pod")
 		return mcp.NewToolResultText(string(output)), nil
 	}
 	count := int64(tailLine)
-    podLogOptions := v1.PodLogOptions{
-        Container: containerName,
-        TailLines: &count,
+	podLogOptions := v1.PodLogOptions{
+		Container: containerName,
+		TailLines: &count,
 	}
 	clientset, err := client.InitializeClients()
 	if err != nil {
