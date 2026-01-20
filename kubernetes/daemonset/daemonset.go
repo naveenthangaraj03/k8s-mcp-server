@@ -1,16 +1,16 @@
 package daemonset
 
 import (
-	"fmt"
 	"context"
 	"encoding/json"
-	"strings"
-	"strconv"
+	"fmt"
+	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
-	"github.com/mark3labs/mcp-go/mcp"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strconv"
+	"strings"
 )
 
 type daemonsetData struct {
@@ -21,7 +21,8 @@ type daemonsetData struct {
 	ContainerName     []string          `json:"containerName,omitempty"`
 	ContainerImage    []string          `json:"containerImage,omitempty"`
 }
-func ListDaemonsetInNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+
+func ListDaemonsetInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for daemonset")
@@ -42,10 +43,10 @@ func ListDaemonsetInNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.
 	var output []daemonsetData
 	for _, daemonset := range daemonsets.Items {
 		output = append(output, daemonsetData{
-			Name: daemonset.Name,
-			Namespace: daemonset.Namespace,
+			Name:              daemonset.Name,
+			Namespace:         daemonset.Namespace,
 			AvailableInstance: fmt.Sprintf("%d/%d", daemonset.Status.NumberReady, daemonset.Status.UpdatedNumberScheduled),
-			Labels: daemonset.Labels,
+			Labels:            daemonset.Labels,
 		})
 	}
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
@@ -55,7 +56,7 @@ func ListDaemonsetInNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func ListDaemonset (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func ListDaemonset(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	labels := request.GetString("label", "")
 
 	clientset, err := client.InitializeClients()
@@ -76,10 +77,10 @@ func ListDaemonset (ctx context.Context, request mcp.CallToolRequest) (*mcp.Call
 		}
 		for _, daemonset := range daemonsets.Items {
 			output = append(output, daemonsetData{
-				Name: daemonset.Name,
-				Namespace: daemonset.Namespace,
+				Name:              daemonset.Name,
+				Namespace:         daemonset.Namespace,
 				AvailableInstance: fmt.Sprintf("%d/%d", daemonset.Status.NumberReady, daemonset.Status.UpdatedNumberScheduled),
-				Labels: daemonset.Labels,
+				Labels:            daemonset.Labels,
 			})
 		}
 	}
@@ -90,7 +91,7 @@ func ListDaemonset (ctx context.Context, request mcp.CallToolRequest) (*mcp.Call
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func GetDaemonset (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func GetDaemonset(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for daemonset")
@@ -109,7 +110,7 @@ func GetDaemonset (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallT
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in getting daemonsets in %s/%s: %v", ns, name, err)), nil
 	}
-	
+
 	var cName []string
 	var cImage []string
 	for _, c := range daemonset.Spec.Template.Spec.Containers {
@@ -118,14 +119,14 @@ func GetDaemonset (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallT
 	}
 
 	output := daemonsetData{
-		Name: daemonset.Name,
-		Namespace: daemonset.Namespace,
+		Name:              daemonset.Name,
+		Namespace:         daemonset.Namespace,
 		AvailableInstance: fmt.Sprintf("%d/%d", daemonset.Status.NumberReady, daemonset.Status.UpdatedNumberScheduled),
-		Labels: daemonset.Labels,
-		ContainerName: cName,
-		ContainerImage: cImage,
+		Labels:            daemonset.Labels,
+		ContainerName:     cName,
+		ContainerImage:    cImage,
 	}
-	
+
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
@@ -133,7 +134,7 @@ func GetDaemonset (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallT
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func DeleteDaemonset (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func DeleteDaemonset(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for daemonset")
@@ -156,7 +157,7 @@ func DeleteDaemonset (ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 	return mcp.NewToolResultText(string(output)), nil
 }
 
-func UpdateDaemonset (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func UpdateDaemonset(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for daemonset")
@@ -222,7 +223,7 @@ func UpdateDaemonset (ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 			daemonset.Spec.Template.Spec.Containers[0].Image = image
 			updateDaemonset, err := clientset.AppsV1().DaemonSets(ns).Update(context.TODO(), daemonset, metav1.UpdateOptions{})
 			if err != nil {
-				return mcp.NewToolResultText(fmt.Sprintf("Error in updating daemonset %s/%s with image %s: %v", ns, name, image,  err)), nil
+				return mcp.NewToolResultText(fmt.Sprintf("Error in updating daemonset %s/%s with image %s: %v", ns, name, image, err)), nil
 			}
 			output := fmt.Sprintf("Successfully daemonset %s/%s updated with image %s", updateDaemonset.Namespace, updateDaemonset.Name, image)
 			return mcp.NewToolResultText(string(output)), nil
@@ -233,19 +234,19 @@ func UpdateDaemonset (ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 			} else {
 				var index int = -1
 				for i, c := range daemonset.Spec.Template.Spec.Containers {
-					if c.Name == containerName{
-						index = i 
+					if c.Name == containerName {
+						index = i
 						break
 					}
 				}
 				if index == -1 {
-					output := fmt.Sprintf("Container name %s is not found in daemonset %s/%s ",containerName, ns, name)
+					output := fmt.Sprintf("Container name %s is not found in daemonset %s/%s ", containerName, ns, name)
 					return mcp.NewToolResultText(string(output)), nil
 				} else {
 					daemonset.Spec.Template.Spec.Containers[index].Image = image
 					updateDaemonset, err := clientset.AppsV1().DaemonSets(ns).Update(context.TODO(), daemonset, metav1.UpdateOptions{})
 					if err != nil {
-						return mcp.NewToolResultText(fmt.Sprintf("Error in updating daemonset %s/%s with image %s: %v", ns, name, image,  err)), nil
+						return mcp.NewToolResultText(fmt.Sprintf("Error in updating daemonset %s/%s with image %s: %v", ns, name, image, err)), nil
 					}
 					output := fmt.Sprintf("Successfully daemonset %s/%s updated with image %s", updateDaemonset.Namespace, updateDaemonset.Name, image)
 					return mcp.NewToolResultText(string(output)), nil
@@ -257,13 +258,13 @@ func UpdateDaemonset (ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 	return mcp.NewToolResultText(string(output)), nil
 }
 
-func CreateDaemonset (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func CreateDaemonset(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for daemonset")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	name,err := request.RequireString("name")
+	name, err := request.RequireString("name")
 	if err != nil {
 		output := fmt.Sprintf("Provide name for daemonset")
 		return mcp.NewToolResultText(string(output)), nil
@@ -316,25 +317,25 @@ func CreateDaemonset (ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 		var ports []v1.ContainerPort
 		if i < len(cPorts) && cPorts[i] != "" {
 			portDefs := strings.Split(cPorts[i], "|")
-	
+
 			for _, pd := range portDefs {
 				parts := strings.SplitN(strings.TrimSpace(pd), ":", 2)
 				if len(parts) != 2 {
 					continue
 				}
-	
+
 				portNum, err := strconv.Atoi(parts[1])
 				if err != nil {
 					continue
 				}
-	
+
 				ports = append(ports, v1.ContainerPort{
 					Name:          strings.TrimSpace(parts[0]),
 					ContainerPort: int32(portNum),
 				})
 			}
 		}
-	
+
 		if len(ports) == 0 {
 			ports = append(ports, v1.ContainerPort{
 				ContainerPort: 8080,
@@ -348,27 +349,27 @@ func CreateDaemonset (ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 	}
 
 	daemonset := &appsv1.DaemonSet{
-        ObjectMeta: metav1.ObjectMeta{
-			Name: name,
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
 			Namespace: ns,
-        },
-        Spec: appsv1.DaemonSetSpec{
-            Selector: &metav1.LabelSelector{
-                MatchLabels: lab,
-            },
-            Template: v1.PodTemplateSpec{
-                ObjectMeta: metav1.ObjectMeta{
-                    Labels: lab,
-                },
-                Spec: v1.PodSpec{
+		},
+		Spec: appsv1.DaemonSetSpec{
+			Selector: &metav1.LabelSelector{
+				MatchLabels: lab,
+			},
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: lab,
+				},
+				Spec: v1.PodSpec{
 					Containers: containers,
-                },
-            },
-        },
+				},
+			},
+		},
 	}
 	deployDaemonset, err := clientset.AppsV1().DaemonSets(ns).Create(context.TODO(), daemonset, metav1.CreateOptions{})
 	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in deploying daemonset %s/%s: %v", ns, name,  err)), nil
+		return mcp.NewToolResultText(fmt.Sprintf("Error in deploying daemonset %s/%s: %v", ns, name, err)), nil
 	}
 	output := fmt.Sprintf("Successfully daemonset %s/%s is created", deployDaemonset.Namespace, deployDaemonset.Name)
 	return mcp.NewToolResultText(string(output)), nil

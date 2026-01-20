@@ -1,32 +1,32 @@
 package clusterrolebinding
 
 import (
-	"fmt"
 	"context"
 	"encoding/json"
+	"fmt"
+	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"github.com/mark3labs/mcp-go/mcp"
 )
 
 type crbData struct {
-	Name         string      `json:"name,omitempty"`
-	Namespace    string      `json:"namespace,omitempty"`
-	RoleRef      roleRef     `json:"roleRef,omitempty"`
-	Subjects     []subjects  `json:"subjects,omitempty"`
+	Name      string     `json:"name,omitempty"`
+	Namespace string     `json:"namespace,omitempty"`
+	RoleRef   roleRef    `json:"roleRef,omitempty"`
+	Subjects  []subjects `json:"subjects,omitempty"`
 }
 
 type roleRef struct {
-	ApiGroup     string  `json:"apiGroup,omitempty"`
-	Kind         string  `json:"kind,omitempty"`
-	Name         string  `json:"name,omitempty"`
+	ApiGroup string `json:"apiGroup,omitempty"`
+	Kind     string `json:"kind,omitempty"`
+	Name     string `json:"name,omitempty"`
 }
 
 type subjects struct {
-	ApiGroup    string  `json:"apiGroup,omitempty"`
-	Kind        string  `json:"kind,omitempty"`
-	Name        string  `json:"name,omitempty"`
-	Namespace   string  `json:"namespace,omitempty"`
+	ApiGroup  string `json:"apiGroup,omitempty"`
+	Kind      string `json:"kind,omitempty"`
+	Name      string `json:"name,omitempty"`
+	Namespace string `json:"namespace,omitempty"`
 }
 
 func ListCRB(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -41,7 +41,7 @@ func ListCRB(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRes
 	var output []crbData
 	for _, crb := range crbs.Items {
 		output = append(output, crbData{
-			Name: crb.Name,
+			Name:      crb.Name,
 			Namespace: crb.Namespace,
 		})
 	}
@@ -71,9 +71,9 @@ func GetCRB(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResu
 
 	for _, crbind := range crb.Subjects {
 		saDetails = append(saDetails, subjects{
-			ApiGroup: crbind.APIGroup,
-			Kind: crbind.Kind,
-			Name: crbind.Name,
+			ApiGroup:  crbind.APIGroup,
+			Kind:      crbind.Kind,
+			Name:      crbind.Name,
 			Namespace: crbind.Namespace,
 		})
 	}
@@ -81,15 +81,15 @@ func GetCRB(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResu
 	var crRef roleRef
 	crRef = roleRef{
 		ApiGroup: crb.RoleRef.APIGroup,
-		Kind: crb.RoleRef.Kind,
-		Name: crb.RoleRef.Name,
+		Kind:     crb.RoleRef.Kind,
+		Name:     crb.RoleRef.Name,
 	}
-	
+
 	output := crbData{
-		Name: crb.Name,
+		Name:      crb.Name,
 		Namespace: crb.Namespace,
-		RoleRef: crRef,
-	    Subjects: saDetails,
+		RoleRef:   crRef,
+		Subjects:  saDetails,
 	}
 
 	mcpOutput, err := json.MarshalIndent(output, "", " ")

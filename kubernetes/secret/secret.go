@@ -1,14 +1,14 @@
 package secret
 
 import (
-	"fmt"
 	"context"
 	"encoding/json"
-	"strings"
-	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/api/core/v1"
+	"fmt"
 	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
 )
 
 type secretData struct {
@@ -17,7 +17,7 @@ type secretData struct {
 	Data      map[string][]byte `json:"data,omitempty"`
 }
 
-func ListSecretInNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func ListSecretInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for secret")
@@ -34,7 +34,7 @@ func ListSecretInNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.Cal
 	var output []secretData
 	for _, secret := range secrets.Items {
 		output = append(output, secretData{
-			Name: secret.Name,
+			Name:      secret.Name,
 			Namespace: secret.Namespace,
 		})
 	}
@@ -45,7 +45,7 @@ func ListSecretInNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.Cal
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func ListSecret (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func ListSecret(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	clientset, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
@@ -62,7 +62,7 @@ func ListSecret (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToo
 		}
 		for _, secret := range secrets.Items {
 			output = append(output, secretData{
-				Name: secret.Name,
+				Name:      secret.Name,
 				Namespace: secret.Namespace,
 			})
 		}
@@ -74,7 +74,7 @@ func ListSecret (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToo
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func GetSecret (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func GetSecret(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for secret")
@@ -93,13 +93,13 @@ func GetSecret (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTool
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in getting secrets in %s: %v", ns, err)), nil
 	}
-	
+
 	output := secretData{
-		Name: secret.Name,
+		Name:      secret.Name,
 		Namespace: secret.Namespace,
-		Data: secret.Data,
+		Data:      secret.Data,
 	}
-	
+
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
@@ -107,7 +107,7 @@ func GetSecret (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTool
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func DeleteSecret (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func DeleteSecret(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for secret delete")
@@ -126,12 +126,12 @@ func DeleteSecret (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallT
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in deleting secrets in %s: %v", ns, err)), nil
 	}
-	
+
 	output := fmt.Sprintf("Secret %s/%s is deleted", ns, name)
 	return mcp.NewToolResultText(string(output)), nil
 }
 
-func CreateSecret (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func CreateSecret(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for secret creation")
@@ -154,7 +154,7 @@ func CreateSecret (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallT
 	}
 
 	secretData := make(map[string]string)
-	
+
 	secData := strings.Split(data, ",")
 	for _, datas := range secData {
 		kv := strings.SplitN(datas, "=", 2)
@@ -171,7 +171,7 @@ func CreateSecret (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallT
 			Namespace: ns,
 		},
 		StringData: secretData,
-		Type: v1.SecretTypeOpaque,
+		Type:       v1.SecretTypeOpaque,
 	}
 	createSecret, err := clientset.CoreV1().Secrets(ns).Create(context.TODO(), secret, metav1.CreateOptions{})
 	if err != nil {

@@ -6,14 +6,14 @@ import (
 
 var ListPodInNamespace = mcp.NewTool(
 	"list-pod-in-namespace",
-    mcp.WithDescription("List the pod in particular namespace with status, label and instance"),
-    mcp.WithString(
+	mcp.WithDescription("List the pod in particular namespace with status, label and instance"),
+	mcp.WithString(
 		"namespace",
 		mcp.Required(),
-        mcp.Description("The namespace in which the pod should be listed"),
+		mcp.Description("The namespace in which the pod should be listed"),
 	),
 	mcp.WithString(
-		"label", 
+		"label",
 		mcp.Description("Only return pods matching this label selector"),
 	),
 )
@@ -22,38 +22,38 @@ var ListPod = mcp.NewTool(
 	"list-pod",
 	mcp.WithDescription("List the pod in all namespaces with status, label and instance"),
 	mcp.WithString(
-		"label", 
+		"label",
 		mcp.Description("Only return pods matching this label selector"),
 	),
 )
 
 var GetPod = mcp.NewTool(
 	"get-pod",
-    mcp.WithDescription("Get the pod in particular namespace with status, label and instance"),
-    mcp.WithString(
+	mcp.WithDescription("Get the pod in particular namespace with status, label and instance"),
+	mcp.WithString(
 		"namespace",
 		mcp.Required(),
-        mcp.Description("The namespace in which the pod exists"),
+		mcp.Description("The namespace in which the pod exists"),
 	),
 	mcp.WithString(
 		"name",
 		mcp.Required(),
-        mcp.Description("The name of the pod to get details"),
+		mcp.Description("The name of the pod to get details"),
 	),
 )
 
 var DeletePod = mcp.NewTool(
 	"delete-pod",
-    mcp.WithDescription("Delete the pod in particular namespace"),
-    mcp.WithString(
+	mcp.WithDescription("Delete the pod in particular namespace"),
+	mcp.WithString(
 		"namespace",
 		mcp.Required(),
-        mcp.Description("The namespace in which the pod to be deleted"),
+		mcp.Description("The namespace in which the pod to be deleted"),
 	),
 	mcp.WithString(
 		"name",
 		mcp.Required(),
-        mcp.Description("The name of the pod to be deleted"),
+		mcp.Description("The name of the pod to be deleted"),
 	),
 )
 
@@ -93,7 +93,7 @@ var CreatePod = mcp.NewTool(
 	mcp.WithString(
 		"label",
 		mcp.Description("Label to be added in that pod"),
-	),		
+	),
 	mcp.WithString(
 		"containerNames",
 		mcp.Required(),
@@ -134,28 +134,28 @@ var PodLog = mcp.NewTool(
 	),
 )
 
-var ListNS = mcp.NewTool( 
+var ListNS = mcp.NewTool(
 	"list-ns",
 	mcp.WithDescription("List the namespace in the kubernetes cluster with status"),
 )
 
-var GetNS = mcp.NewTool( 
+var GetNS = mcp.NewTool(
 	"get-ns",
 	mcp.WithDescription("Get the particular namespace in the kubernetes cluster with status"),
 	mcp.WithString(
 		"name",
 		mcp.Required(),
-        mcp.Description("The name of the namespace to get details for"),
+		mcp.Description("The name of the namespace to get details for"),
 	),
 )
 
-var DeleteNS = mcp.NewTool( 
+var DeleteNS = mcp.NewTool(
 	"delete-ns",
 	mcp.WithDescription("Delete the particular namespace in the kubernetes cluster"),
 	mcp.WithString(
 		"name",
 		mcp.Required(),
-        mcp.Description("The name of the namespace to be deleted"),
+		mcp.Description("The name of the namespace to be deleted"),
 	),
 )
 
@@ -200,7 +200,7 @@ var ListDeploymentInNamespace = mcp.NewTool(
 		mcp.Description("The namespace in which the deployment should be listed"),
 	),
 	mcp.WithString(
-		"label", 
+		"label",
 		mcp.Description("The deployment should be listed only if this particular label is exist"),
 	),
 )
@@ -209,7 +209,7 @@ var ListDeployment = mcp.NewTool(
 	"list-deployment",
 	mcp.WithDescription("List the deployment in the all namespaces with available instance with label"),
 	mcp.WithString(
-		"label", 
+		"label",
 		mcp.Description("The deployment should be listed only if this particular label is exist"),
 	),
 )
@@ -277,7 +277,6 @@ var UpdateDeployment = mcp.NewTool(
 		"image",
 		mcp.Description("Image to be updated"),
 	),
-
 )
 
 var CreateDeployment = mcp.NewTool(
@@ -300,7 +299,7 @@ var CreateDeployment = mcp.NewTool(
 	mcp.WithNumber(
 		"replica",
 		mcp.Description("Number of replica"),
-	),		
+	),
 	mcp.WithString(
 		"containerNames",
 		mcp.Required(),
@@ -315,7 +314,6 @@ var CreateDeployment = mcp.NewTool(
 		"containerPorts",
 		mcp.Description("Container port details for the deployment"),
 	),
-
 )
 
 var ListServiceInNamespace = mcp.NewTool(
@@ -408,7 +406,7 @@ var CreateService = mcp.NewTool(
 		"svcPort",
 		mcp.Required(),
 		mcp.Description("Service port name and port details for service"),
-	),		
+	),
 	mcp.WithString(
 		"targetPort",
 		mcp.Required(),
@@ -420,7 +418,7 @@ var CreateService = mcp.NewTool(
 	),
 )
 
-var  ListStatefulsetInNamespace = mcp.NewTool(
+var ListStatefulsetInNamespace = mcp.NewTool(
 	"list-statefulset-in-namespace",
 	mcp.WithDescription("List the statefulset in particular namespace with available instance and label"),
 	mcp.WithString(
@@ -429,7 +427,7 @@ var  ListStatefulsetInNamespace = mcp.NewTool(
 		mcp.Description("The namespace in which the statefulset should be listed"),
 	),
 	mcp.WithString(
-		"label", 
+		"label",
 		mcp.Description("Get the statefulset only if this particular label is exist"),
 	),
 )
@@ -438,12 +436,12 @@ var ListStatefulset = mcp.NewTool(
 	"list-statefulset",
 	mcp.WithDescription("List the statefulset in the all namespace with available instance and label"),
 	mcp.WithString(
-		"label", 
+		"label",
 		mcp.Description("Get the statefulset only if this particular label is exist"),
 	),
 )
 
-var  GetStatefulset = mcp.NewTool(
+var GetStatefulset = mcp.NewTool(
 	"get-statefulset",
 	mcp.WithDescription("Get the particular statefulset in particular namespace with available instance and labels"),
 	mcp.WithString(
@@ -458,7 +456,7 @@ var  GetStatefulset = mcp.NewTool(
 	),
 )
 
-var  DeleteStatefulset = mcp.NewTool(
+var DeleteStatefulset = mcp.NewTool(
 	"delete-statefulset",
 	mcp.WithDescription("Delete the particular statefulset in particular namespace"),
 	mcp.WithString(
@@ -575,7 +573,7 @@ var ListDaemonsetInNamespace = mcp.NewTool(
 		mcp.Description("The namespace in which the daemonset should be listed"),
 	),
 	mcp.WithString(
-		"label", 
+		"label",
 		mcp.Description("The daemonset should be listed only if this particular label is exist"),
 	),
 )
@@ -584,7 +582,7 @@ var ListDaemonset = mcp.NewTool(
 	"list-daemonset",
 	mcp.WithDescription("List the daemonset in the all namespace with available instance and label"),
 	mcp.WithString(
-		"label", 
+		"label",
 		mcp.Description("Get the daemonset only if this particular label is exist"),
 	),
 )
@@ -648,7 +646,6 @@ var UpdateDaemonset = mcp.NewTool(
 		"image",
 		mcp.Description("Image to be updated"),
 	),
-
 )
 
 var CreateDaemonset = mcp.NewTool(
@@ -682,7 +679,6 @@ var CreateDaemonset = mcp.NewTool(
 		"containerPorts",
 		mcp.Description("Container port details for the daemonset"),
 	),
-
 )
 
 var ListConfigmapInNamespace = mcp.NewTool(
@@ -750,7 +746,6 @@ var CreateConfigmap = mcp.NewTool(
 	),
 )
 
-
 var ListSecretInNamespace = mcp.NewTool(
 	"list-secret-in-namespace",
 	mcp.WithDescription("List the secret in particular namespace"),
@@ -815,7 +810,7 @@ var CreateSecret = mcp.NewTool(
 		mcp.Description("Data of the secret to be created for"),
 	),
 )
-	
+
 var ListNode = mcp.NewTool(
 	"list-node",
 	mcp.WithDescription("List the node in the kubernetes cluster with status"),
@@ -1047,7 +1042,6 @@ var DeletePV = mcp.NewTool(
 	),
 )
 
-
 var ListRoleInNS = mcp.NewTool(
 	"list-role-in-namespace",
 	mcp.WithDescription("List the role in particular namespace"),
@@ -1108,7 +1102,6 @@ var GetRB = mcp.NewTool(
 	),
 )
 
-
 var ListCR = mcp.NewTool(
 	"list-clusterrole",
 	mcp.WithDescription("List all the clusterrole in the cluster"),
@@ -1151,5 +1144,28 @@ var GetSC = mcp.NewTool(
 		"name",
 		mcp.Required(),
 		mcp.Description("Name of the storageClass to get"),
+	),
+)
+
+var Custom = mcp.NewTool(
+	"custom",
+	mcp.WithDescription("Working with custom resource"),
+	mcp.WithString(
+		"kind",
+		mcp.Required(),
+		mcp.Description("kind of the custom resource"),
+	),
+	mcp.WithString(
+		"method",
+		mcp.Required(),
+		mcp.Description("method to work on that custom resource"),
+	),
+	mcp.WithString(
+		"name",
+		mcp.Description("name of the custom resource"),
+	),
+	mcp.WithString(
+		"namespace",
+		mcp.Description("namespace in which custom resource exits"),
 	),
 )

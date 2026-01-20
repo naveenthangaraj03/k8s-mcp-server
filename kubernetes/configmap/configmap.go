@@ -1,23 +1,23 @@
 package configmap
 
 import (
-	"fmt"
 	"context"
 	"encoding/json"
-	"strings"
-	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/api/core/v1"
+	"fmt"
 	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
 )
 
 type cmData struct {
 	Name      string            `json:"name,omitempty"`
-	Namespace string            `json:"namespace,omitempty"` 
+	Namespace string            `json:"namespace,omitempty"`
 	Data      map[string]string `json:"data,omitempty"`
 }
 
-func ListConfigmapInNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func ListConfigmapInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for configmap")
@@ -34,7 +34,7 @@ func ListConfigmapInNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.
 	var output []cmData
 	for _, configmap := range configmaps.Items {
 		output = append(output, cmData{
-			Name: configmap.Name,
+			Name:      configmap.Name,
 			Namespace: configmap.Namespace,
 		})
 	}
@@ -45,7 +45,7 @@ func ListConfigmapInNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func ListConfigmap (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func ListConfigmap(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	clientset, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
@@ -62,7 +62,7 @@ func ListConfigmap (ctx context.Context, request mcp.CallToolRequest) (*mcp.Call
 		}
 		for _, configmap := range configmaps.Items {
 			output = append(output, cmData{
-				Name: configmap.Name,
+				Name:      configmap.Name,
 				Namespace: configmap.Namespace,
 			})
 		}
@@ -74,7 +74,7 @@ func ListConfigmap (ctx context.Context, request mcp.CallToolRequest) (*mcp.Call
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func GetConfigmap (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func GetConfigmap(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for configmap")
@@ -94,9 +94,9 @@ func GetConfigmap (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallT
 		return mcp.NewToolResultText(fmt.Sprintf("Error in getting configmaps in %s/%s: %v", ns, name, err)), nil
 	}
 	output := cmData{
-		Name: configmap.Name,
+		Name:      configmap.Name,
 		Namespace: configmap.Namespace,
-		Data: configmap.Data,
+		Data:      configmap.Data,
 	}
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
 	if err != nil {
@@ -105,7 +105,7 @@ func GetConfigmap (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallT
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func DeleteConfigmap (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func DeleteConfigmap(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for configmap")
@@ -128,7 +128,7 @@ func DeleteConfigmap (ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 	return mcp.NewToolResultText(string(output)), nil
 }
 
-func CreateConfigmap (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func CreateConfigmap(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for configmap creation")
@@ -151,7 +151,7 @@ func CreateConfigmap (ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 	}
 
 	configmapData := make(map[string]string)
-	
+
 	cmData := strings.Split(data, ",")
 	for _, datas := range cmData {
 		kv := strings.SplitN(datas, "=", 2)

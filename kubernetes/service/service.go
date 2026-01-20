@@ -1,16 +1,16 @@
 package service
 
 import (
-	"fmt"
 	"context"
 	"encoding/json"
-	"strings"
-	"strconv"
-	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
+	"fmt"
 	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	"strconv"
+	"strings"
 )
 
 type serviceData struct {
@@ -22,7 +22,7 @@ type serviceData struct {
 	SelectorLabel map[string]string `json:"selectorLabel,omitempty"`
 }
 
-func ListServiceInNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func ListServiceInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for service")
@@ -39,9 +39,9 @@ func ListServiceInNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 	var output []serviceData
 	for _, service := range services.Items {
 		output = append(output, serviceData{
-			Name: service.Name,
+			Name:      service.Name,
 			Namespace: service.Namespace,
-			Type: string(service.Spec.Type),
+			Type:      string(service.Spec.Type),
 		})
 	}
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
@@ -51,7 +51,7 @@ func ListServiceInNS (ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func ListService (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func ListService(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	clientset, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
@@ -69,9 +69,9 @@ func ListService (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTo
 		var output []serviceData
 		for _, service := range services.Items {
 			output = append(output, serviceData{
-				Name: service.Name,
+				Name:      service.Name,
 				Namespace: service.Namespace,
-				Type: string(service.Spec.Type),
+				Type:      string(service.Spec.Type),
 			})
 		}
 	}
@@ -82,7 +82,7 @@ func ListService (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTo
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func GetService (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func GetService(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for service")
@@ -107,16 +107,16 @@ func GetService (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToo
 		temp := service.Status.LoadBalancer.Ingress
 		externalIP = temp[0].IP
 	}
-	
+
 	output := serviceData{
-		Name: service.Name,
-		Namespace: service.Namespace,
-		Type: string(service.Spec.Type),
-		InternalIP: service.Spec.ClusterIP,
-		ExternalIP: externalIP,
+		Name:          service.Name,
+		Namespace:     service.Namespace,
+		Type:          string(service.Spec.Type),
+		InternalIP:    service.Spec.ClusterIP,
+		ExternalIP:    externalIP,
 		SelectorLabel: service.Spec.Selector,
 	}
-	
+
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
@@ -124,7 +124,7 @@ func GetService (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToo
 	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
-func DeleteService (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func DeleteService(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for service")
@@ -143,12 +143,12 @@ func DeleteService (ctx context.Context, request mcp.CallToolRequest) (*mcp.Call
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in deleting service in %s/%s: %v", ns, name, err)), nil
 	}
-	
+
 	output := fmt.Sprintf("Service %s/%s is deleted", ns, name)
 	return mcp.NewToolResultText(string(output)), nil
 }
 
-func UpdateService (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func UpdateService(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for service")
@@ -201,13 +201,13 @@ func UpdateService (ctx context.Context, request mcp.CallToolRequest) (*mcp.Call
 	return mcp.NewToolResultText(string(output)), nil
 }
 
-func CreateService (ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func CreateService(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	ns, err := request.RequireString("namespace")
 	if err != nil {
 		output := fmt.Sprintf("Provide namespace for service")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	name,err := request.RequireString("name")
+	name, err := request.RequireString("name")
 	if err != nil {
 		output := fmt.Sprintf("Provide name for service")
 		return mcp.NewToolResultText(string(output)), nil
@@ -260,12 +260,12 @@ func CreateService (ctx context.Context, request mcp.CallToolRequest) (*mcp.Call
 		if err != nil {
 			continue
 		}
-		targetNum, err :=  strconv.Atoi(tPorts[i])
+		targetNum, err := strconv.Atoi(tPorts[i])
 		if err != nil {
 			continue
 		}
 		ports = append(ports, v1.ServicePort{
-			Name:      strings.TrimSpace(parts[0]),
+			Name:       strings.TrimSpace(parts[0]),
 			Port:       int32(portNum),
 			TargetPort: intstr.FromInt(targetNum),
 		})
@@ -279,8 +279,8 @@ func CreateService (ctx context.Context, request mcp.CallToolRequest) (*mcp.Call
 		},
 		Spec: v1.ServiceSpec{
 			Selector: lab,
-			Ports: ports,
-			Type: v1.ServiceType(svcType),
+			Ports:    ports,
+			Type:     v1.ServiceType(svcType),
 		},
 	}
 	deployService, err := clientset.CoreV1().Services(ns).Create(context.TODO(), service, metav1.CreateOptions{})
