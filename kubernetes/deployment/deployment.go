@@ -11,6 +11,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strconv"
 	"strings"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type deploymentData struct {
@@ -30,7 +32,7 @@ func ListDeploymentInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.
 	}
 	labels := request.GetString("label", "")
 
-	clientset, err := client.InitializeClients()
+	clientset, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -58,7 +60,7 @@ func ListDeploymentInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.
 
 func ListDeployment(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	labels := request.GetString("label", "")
-	clientset, err := client.InitializeClients()
+	clientset, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -102,7 +104,7 @@ func GetDeployment(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallT
 		output := fmt.Sprintf("Provide name for deployment")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, err := client.InitializeClients()
+	clientset, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -144,7 +146,7 @@ func DeleteDeployment(ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 		output := fmt.Sprintf("Provide name for deployment")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, err := client.InitializeClients()
+	clientset, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -173,7 +175,7 @@ func UpdateDeployment(ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 	image := request.GetString("image", "")
 	containerName := request.GetString("containerName", "")
 	replica := request.GetInt("replica", -1)
-	clientset, err := client.InitializeClients()
+	clientset, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -293,7 +295,7 @@ func CreateDeployment(ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 		return mcp.NewToolResultText(string(output)), nil
 	}
 	containerPorts := request.GetString("containerPorts", "http:8080")
-	clientset, err := client.InitializeClients()
+	clientset, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -388,4 +390,36 @@ func CreateDeployment(ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 	}
 	output := fmt.Sprintf("Successfully deployment %s/%s is created", deployDeployment.Namespace, deployDeployment.Name)
 	return mcp.NewToolResultText(string(output)), nil
+}
+
+func CreateDeploymentWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	jsondata, err := request.RequireString("jsondata")
+	if err != nil {
+		output := fmt.Sprintf("Provide jsonData for deployment")
+		return mcp.NewToolResultText(string(output)), nil
+	}
+	_, dynamicClient, err := client.InitializeClients()
+	if err != nil {
+		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
+	}
+	resourceId := schema.GroupVersionResource{
+		Group:    "apps",
+		Version:  "v1",
+		Resource: "deployments",
+	}
+
+	var obj map[string]interface{}
+	if err := json.Unmarshal([]byte(jsondata), &obj); err != nil {
+		return nil, err
+	}
+
+	unstructuredObj := &unstructured.Unstructured{Object: obj}
+
+	ns := unstructuredObj.GetNamespace()
+
+	_, err = dynamicClient.Resource(resourceId).Namespace(ns).Create(ctx, unstructuredObj , metav1.CreateOptions{})
+	if err != nil {
+		return mcp.NewToolResultText(fmt.Sprintf("Error in creating deployment with jsondata in %s namespace: %v", ns, err)), nil
+	}
+	return mcp.NewToolResultText(fmt.Sprintf("Successfully created deployment with jsondata in %s namespace", ns)), nil
 }

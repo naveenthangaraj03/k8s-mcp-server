@@ -6,6 +6,11 @@ The list of field available to create namespace:
 - Name: Required field
 - Label: Optional field
 
+### Create With Json
+
+The list of fields available to create the namespace:
+- JsonData: Required field
+
 ### List
 
 No field is required to list namespace:

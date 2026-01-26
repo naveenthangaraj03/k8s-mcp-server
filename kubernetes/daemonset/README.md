@@ -11,6 +11,11 @@ The list of fields available to create Daemonset:
 - Label: Optional field
 - Replica: Optional field
 
+### Create With Json
+
+The list of fields available to create the Daemonset:
+- JsonData: Required field
+
 ### List
 
 The list of fields available to list daemonset in particular namespace:

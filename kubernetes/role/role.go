@@ -7,6 +7,8 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type roleData struct {
@@ -27,7 +29,7 @@ func ListRoleInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTo
 		output := fmt.Sprintf("Provide namespace for role")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, err := client.InitializeClients()
+	clientset, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -50,7 +52,7 @@ func ListRoleInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTo
 }
 
 func ListRole(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	clientset, err := client.InitializeClients()
+	clientset, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -90,7 +92,7 @@ func GetRole(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRes
 		output := fmt.Sprintf("Provide name for role")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, err := client.InitializeClients()
+	clientset, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -120,4 +122,58 @@ func GetRole(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRes
 		return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
 	}
 	return mcp.NewToolResultText(string(mcpOutput)), nil
+}
+
+func DeleteRole(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	ns, err := request.RequireString("namespace")
+	if err != nil {
+		output := fmt.Sprintf("Provide namespace for role")
+		return mcp.NewToolResultText(string(output)), nil
+	}
+	name, err := request.RequireString("name")
+	if err != nil {
+		output := fmt.Sprintf("Provide name for role")
+		return mcp.NewToolResultText(string(output)), nil
+	}
+	clientset, _, err := client.InitializeClients()
+	if err != nil {
+		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
+	}
+	err = clientset.RbacV1().Roles(ns).Delete(context.TODO(), name, metav1.DeleteOptions{})
+	if err != nil {
+		return mcp.NewToolResultText(fmt.Sprintf("Error in deleting role %s/%s: %v", ns, name, err)), nil
+	}
+	return mcp.NewToolResultText(fmt.Sprintf("Successfully deleted role %s/%s", ns, name)), nil
+}
+
+func CreateRoleWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	jsondata, err := request.RequireString("jsondata")
+	if err != nil {
+		output := fmt.Sprintf("Provide jsonData for role")
+		return mcp.NewToolResultText(string(output)), nil
+	}
+	_, dynamicClient, err := client.InitializeClients()
+	if err != nil {
+		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
+	}
+	resourceId := schema.GroupVersionResource{
+		Group:    "rbac.authorization.k8s.io",
+		Version:  "v1",
+		Resource: "roles",
+	}
+
+	var obj map[string]interface{}
+	if err := json.Unmarshal([]byte(jsondata), &obj); err != nil {
+		return nil, err
+	}
+
+	unstructuredObj := &unstructured.Unstructured{Object: obj}
+
+	ns := unstructuredObj.GetNamespace()
+
+	_, err = dynamicClient.Resource(resourceId).Namespace(ns).Create(ctx, unstructuredObj , metav1.CreateOptions{})
+	if err != nil {
+		return mcp.NewToolResultText(fmt.Sprintf("Error in creating role with jsondata in %s namespace: %v", ns,  err)), nil
+	}
+	return mcp.NewToolResultText(fmt.Sprintf("Successfully created role with jsondata in %s namespace", ns)), nil
 }

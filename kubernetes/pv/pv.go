@@ -20,7 +20,7 @@ type pvData struct {
 }
 
 func ListPV(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	clientset, err := client.InitializeClients()
+	clientset, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -51,7 +51,7 @@ func GetPV(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResul
 		output := fmt.Sprintf("Provide name for pv")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, err := client.InitializeClients()
+	clientset, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -87,7 +87,7 @@ func DeletePV(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRe
 		output := fmt.Sprintf("Provide name for pv")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, err := client.InitializeClients()
+	clientset, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}

@@ -11,6 +11,11 @@ The list of fields available to create Deployment:
 - Label: Optional field
 - Replica: Optional field
 
+### Create With Json
+
+The list of fields available to create the deployment:
+- JsonData: Required field
+
 ### List
 
 The list of fields available to list deployment in particular namespace:

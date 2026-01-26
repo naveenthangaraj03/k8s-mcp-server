@@ -9,6 +9,8 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strings"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type secretData struct {
@@ -23,7 +25,7 @@ func ListSecretInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.Call
 		output := fmt.Sprintf("Provide namespace for secret")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, err := client.InitializeClients()
+	clientset, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -46,7 +48,7 @@ func ListSecretInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.Call
 }
 
 func ListSecret(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	clientset, err := client.InitializeClients()
+	clientset, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -85,7 +87,7 @@ func GetSecret(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolR
 		output := fmt.Sprintf("Provide name for secret")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, err := client.InitializeClients()
+	clientset, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -118,7 +120,7 @@ func DeleteSecret(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTo
 		output := fmt.Sprintf("Provide name for secret delete")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, err := client.InitializeClients()
+	clientset, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -148,7 +150,7 @@ func CreateSecret(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTo
 		return mcp.NewToolResultText(string(output)), nil
 	}
 
-	clientset, err := client.InitializeClients()
+	clientset, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -179,4 +181,36 @@ func CreateSecret(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTo
 	}
 	output := fmt.Sprintf("Successfully secret %s/%s is created", createSecret.Namespace, createSecret.Name)
 	return mcp.NewToolResultText(string(output)), nil
+}
+
+func CreateSecretWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	jsondata, err := request.RequireString("jsondata")
+	if err != nil {
+		output := fmt.Sprintf("Provide jsonData for secret")
+		return mcp.NewToolResultText(string(output)), nil
+	}
+	_, dynamicClient, err := client.InitializeClients()
+	if err != nil {
+		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
+	}
+	resourceId := schema.GroupVersionResource{
+		Group:    "",
+		Version:  "v1",
+		Resource: "secrets",
+	}
+
+	var obj map[string]interface{}
+	if err := json.Unmarshal([]byte(jsondata), &obj); err != nil {
+		return nil, err
+	}
+
+	unstructuredObj := &unstructured.Unstructured{Object: obj}
+
+	ns := unstructuredObj.GetNamespace()
+
+	_, err = dynamicClient.Resource(resourceId).Namespace(ns).Create(ctx, unstructuredObj , metav1.CreateOptions{})
+	if err != nil {
+		return mcp.NewToolResultText(fmt.Sprintf("Error in creating secret with jsondata in %s namespace: %v", ns, err)), nil
+	}
+	return mcp.NewToolResultText(fmt.Sprintf("Successfully created secret with jsondata in %s namespace", ns)), nil
 }
