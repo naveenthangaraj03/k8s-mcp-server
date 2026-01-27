@@ -37,7 +37,7 @@ func ListRBInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTool
 		output := fmt.Sprintf("Provide namespace for rolebinding")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -60,7 +60,7 @@ func ListRBInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTool
 }
 
 func ListRB(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -100,7 +100,7 @@ func GetRB(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResul
 		output := fmt.Sprintf("Provide name for rolebinding")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -152,7 +152,7 @@ func DeleteRB(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRe
 		output := fmt.Sprintf("Provide name for rolebinding")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -169,7 +169,7 @@ func CreateRBWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 		output := fmt.Sprintf("Provide jsonData for rolebinding")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	_, dynamicClient, err := client.InitializeClients()
+	_, dynamicClient, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -188,7 +188,7 @@ func CreateRBWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 
 	ns := unstructuredObj.GetNamespace()
 
-	_, err = dynamicClient.Resource(resourceId).Namespace(ns).Create(ctx, unstructuredObj , metav1.CreateOptions{})
+	_, err = dynamicClient.Resource(resourceId).Namespace(ns).Create(ctx, unstructuredObj, metav1.CreateOptions{})
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in creating rolebinding with jsondata in %s namespace: %v", ns, err)), nil
 	}

@@ -8,11 +8,11 @@ import (
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"strconv"
 	"strings"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type serviceData struct {
@@ -30,7 +30,7 @@ func ListServiceInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.Cal
 		output := fmt.Sprintf("Provide namespace for service")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -54,7 +54,7 @@ func ListServiceInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.Cal
 }
 
 func ListService(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -95,7 +95,7 @@ func GetService(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTool
 		output := fmt.Sprintf("Provide name for service")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -137,7 +137,7 @@ func DeleteService(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallT
 		output := fmt.Sprintf("Provide name for service")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -163,7 +163,7 @@ func UpdateService(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallT
 	}
 	selectorLabel := request.GetString("selectorLabel", "")
 	svctype := request.GetString("type", "")
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -230,7 +230,7 @@ func CreateService(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallT
 		output := fmt.Sprintf("Provide target port for service")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -299,7 +299,7 @@ func CreateServiceWithJson(ctx context.Context, request mcp.CallToolRequest) (*m
 		output := fmt.Sprintf("Provide jsonData for service")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	_, dynamicClient, err := client.InitializeClients()
+	_, dynamicClient, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -318,7 +318,7 @@ func CreateServiceWithJson(ctx context.Context, request mcp.CallToolRequest) (*m
 
 	ns := unstructuredObj.GetNamespace()
 
-	_, err = dynamicClient.Resource(resourceId).Namespace(ns).Create(ctx, unstructuredObj , metav1.CreateOptions{})
+	_, err = dynamicClient.Resource(resourceId).Namespace(ns).Create(ctx, unstructuredObj, metav1.CreateOptions{})
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in creating service with jsondata in %s namespace: %v", ns, err)), nil
 	}

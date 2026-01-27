@@ -29,7 +29,7 @@ func ListRoleInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTo
 		output := fmt.Sprintf("Provide namespace for role")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -52,7 +52,7 @@ func ListRoleInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTo
 }
 
 func ListRole(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -92,7 +92,7 @@ func GetRole(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRes
 		output := fmt.Sprintf("Provide name for role")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -135,7 +135,7 @@ func DeleteRole(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTool
 		output := fmt.Sprintf("Provide name for role")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -152,7 +152,7 @@ func CreateRoleWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.
 		output := fmt.Sprintf("Provide jsonData for role")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	_, dynamicClient, err := client.InitializeClients()
+	_, dynamicClient, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -171,9 +171,9 @@ func CreateRoleWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.
 
 	ns := unstructuredObj.GetNamespace()
 
-	_, err = dynamicClient.Resource(resourceId).Namespace(ns).Create(ctx, unstructuredObj , metav1.CreateOptions{})
+	_, err = dynamicClient.Resource(resourceId).Namespace(ns).Create(ctx, unstructuredObj, metav1.CreateOptions{})
 	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in creating role with jsondata in %s namespace: %v", ns,  err)), nil
+		return mcp.NewToolResultText(fmt.Sprintf("Error in creating role with jsondata in %s namespace: %v", ns, err)), nil
 	}
 	return mcp.NewToolResultText(fmt.Sprintf("Successfully created role with jsondata in %s namespace", ns)), nil
 }

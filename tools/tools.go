@@ -1397,3 +1397,39 @@ var Custom = mcp.NewTool(
 		mcp.Description("namespace in which custom resource exits"),
 	),
 )
+
+// CRD tools details
+var ListCRD = mcp.NewTool(
+	"list-crd",
+	mcp.WithDescription("List the crds in the cluster"),
+)
+
+var GetCRD = mcp.NewTool(
+	"get-crd",
+	mcp.WithDescription("Get the particular crd in the cluster"),
+	mcp.WithString(
+		"name",
+		mcp.Required(),
+		mcp.Description("Name of the crd to get"),
+	),
+)
+
+var DeleteCRD = mcp.NewTool(
+	"delete-crd",
+	mcp.WithDescription("Delete the particular crd in the cluster"),
+	mcp.WithString(
+		"name",
+		mcp.Required(),
+		mcp.Description("Name of the crd to be deleted"),
+	),
+)
+
+var CreateCRDWithJson = mcp.NewTool(
+	"create-crd-with-json",
+	mcp.WithDescription("Create crd with json data"),
+	mcp.WithString(
+		"jsondata",
+		mcp.Required(),
+		mcp.Description("Json data to create crd"),
+	),
+)

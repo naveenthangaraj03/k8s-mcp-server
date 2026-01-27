@@ -20,7 +20,7 @@ type nodeData struct {
 }
 
 func ListNode(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -58,7 +58,7 @@ func GetNode(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRes
 		output := fmt.Sprintf("Provide name for node")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -97,7 +97,7 @@ func DeleteNode(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTool
 		output := fmt.Sprintf("Provide name for node")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -120,7 +120,7 @@ func UpdateNode(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTool
 		output := fmt.Sprintf("Provide label for node")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}

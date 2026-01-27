@@ -7,6 +7,7 @@ import (
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/clusterrole"
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/clusterrolebinding"
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/configmap"
+	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/crd"
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/custom"
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/daemonset"
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/deployment"
@@ -162,6 +163,12 @@ func main() {
 	s.AddTool(tools.GetSC, storageclass.GetSC)
 	s.AddTool(tools.DeleteSC, storageclass.DeleteSC)
 	s.AddTool(tools.CreateSCWithJson, storageclass.CreateSCWithJson)
+
+	// CRD tools
+	s.AddTool(tools.ListCRD, crd.ListCRD)
+	s.AddTool(tools.GetCRD, crd.GetCRD)
+	s.AddTool(tools.DeleteCRD, crd.DeleteCRD)
+	s.AddTool(tools.CreateCRDWithJson, crd.CreateCRDWithJson)
 
 	// Custom tool
 	s.AddTool(tools.Custom, custom.Custom)

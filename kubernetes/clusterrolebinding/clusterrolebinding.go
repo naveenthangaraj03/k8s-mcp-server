@@ -12,10 +12,9 @@ import (
 )
 
 type crbData struct {
-	Name      string     `json:"name,omitempty"`
-	Namespace string     `json:"namespace,omitempty"`
-	RoleRef   roleRef    `json:"roleRef,omitempty"`
-	Subjects  []subjects `json:"subjects,omitempty"`
+	Name     string     `json:"name,omitempty"`
+	RoleRef  roleRef    `json:"roleRef,omitempty"`
+	Subjects []subjects `json:"subjects,omitempty"`
 }
 
 type roleRef struct {
@@ -32,7 +31,7 @@ type subjects struct {
 }
 
 func ListCRB(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -43,8 +42,7 @@ func ListCRB(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRes
 	var output []crbData
 	for _, crb := range crbs.Items {
 		output = append(output, crbData{
-			Name:      crb.Name,
-			Namespace: crb.Namespace,
+			Name: crb.Name,
 		})
 	}
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
@@ -60,7 +58,7 @@ func GetCRB(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResu
 		output := fmt.Sprintf("Provide name for clusterrolebinding")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -88,10 +86,9 @@ func GetCRB(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResu
 	}
 
 	output := crbData{
-		Name:      crb.Name,
-		Namespace: crb.Namespace,
-		RoleRef:   crRef,
-		Subjects:  saDetails,
+		Name:     crb.Name,
+		RoleRef:  crRef,
+		Subjects: saDetails,
 	}
 
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
@@ -107,7 +104,7 @@ func DeleteCRB(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolR
 		output := fmt.Sprintf("Provide name for clusterrolebinding")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -124,7 +121,7 @@ func CreateCRBWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.C
 		output := fmt.Sprintf("Provide jsonData for clusterrolebinding")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	_, dynamicClient, err := client.InitializeClients()
+	_, dynamicClient, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -141,7 +138,7 @@ func CreateCRBWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.C
 
 	unstructuredObj := &unstructured.Unstructured{Object: obj}
 
-	_, err = dynamicClient.Resource(resourceId).Create(ctx, unstructuredObj , metav1.CreateOptions{})
+	_, err = dynamicClient.Resource(resourceId).Create(ctx, unstructuredObj, metav1.CreateOptions{})
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in creating clusterrolebinding with jsondata: %v", err)), nil
 	}

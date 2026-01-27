@@ -9,10 +9,10 @@ import (
 	"io"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strconv"
-	"strings"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"strconv"
+	"strings"
 )
 
 type podData struct {
@@ -31,7 +31,7 @@ func ListPodInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToo
 	}
 	labels := request.GetString("label", "")
 
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -59,7 +59,7 @@ func ListPodInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToo
 
 func ListPod(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	labels := request.GetString("label", "")
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -104,7 +104,7 @@ func GetPod(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResu
 		output := fmt.Sprintf("Provide name for pod")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -145,7 +145,7 @@ func DeletePod(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolR
 		output := fmt.Sprintf("Provide name for pod")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -173,7 +173,7 @@ func UpdatePod(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolR
 		output := fmt.Sprintf("Provide label for pod")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -223,7 +223,7 @@ func CreatePod(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolR
 		return mcp.NewToolResultText(string(output)), nil
 	}
 	containerPorts := request.GetString("containerPorts", "http:8080")
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -325,7 +325,7 @@ func PodLog(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResu
 		Container: containerName,
 		TailLines: &count,
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -350,7 +350,7 @@ func CreatePodWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.C
 		output := fmt.Sprintf("Provide jsonData for pod")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	_, dynamicClient, err := client.InitializeClients()
+	_, dynamicClient, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -369,7 +369,7 @@ func CreatePodWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.C
 
 	ns := unstructuredObj.GetNamespace()
 
-	_, err = dynamicClient.Resource(resourceId).Namespace(ns).Create(ctx, unstructuredObj , metav1.CreateOptions{})
+	_, err = dynamicClient.Resource(resourceId).Namespace(ns).Create(ctx, unstructuredObj, metav1.CreateOptions{})
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in creating pod with jsondata in %s namespace: %v", ns, err)), nil
 	}

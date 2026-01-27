@@ -8,9 +8,9 @@ import (
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strings"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"strings"
 )
 
 type namespaceData struct {
@@ -19,7 +19,7 @@ type namespaceData struct {
 }
 
 func ListNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -47,7 +47,7 @@ func GetNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResul
 		output := fmt.Sprintf("Provide namespace name to get")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -72,7 +72,7 @@ func DeleteNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRe
 		output := fmt.Sprintf("Provide namespace name to delete")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -92,7 +92,7 @@ func UpdateNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRe
 	}
 	labels := request.GetString("label", "")
 	annotation := request.GetString("annotation", "")
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -149,7 +149,7 @@ func CreateNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRe
 		return mcp.NewToolResultText(string(output)), nil
 	}
 	labels := request.GetString("label", "")
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -188,7 +188,7 @@ func CreateNSWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 		output := fmt.Sprintf("Provide jsonData for namespace")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	_, dynamicClient, err := client.InitializeClients()
+	_, dynamicClient, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -205,8 +205,7 @@ func CreateNSWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 
 	unstructuredObj := &unstructured.Unstructured{Object: obj}
 
-
-	_, err = dynamicClient.Resource(resourceId).Create(ctx, unstructuredObj , metav1.CreateOptions{})
+	_, err = dynamicClient.Resource(resourceId).Create(ctx, unstructuredObj, metav1.CreateOptions{})
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in creating namespace with jsondata: %v", err)), nil
 	}

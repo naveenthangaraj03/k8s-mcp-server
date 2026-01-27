@@ -12,9 +12,8 @@ import (
 )
 
 type crData struct {
-	Name      string  `json:"name,omitempty"`
-	Namespace string  `json:"namespace,omitempty"`
-	Rules     []rules `json:"rules,omitempty"`
+	Name  string  `json:"name,omitempty"`
+	Rules []rules `json:"rules,omitempty"`
 }
 
 type rules struct {
@@ -24,7 +23,7 @@ type rules struct {
 }
 
 func ListCR(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -35,8 +34,7 @@ func ListCR(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResu
 	var output []crData
 	for _, cr := range crs.Items {
 		output = append(output, crData{
-			Name:      cr.Name,
-			Namespace: cr.Namespace,
+			Name: cr.Name,
 		})
 	}
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
@@ -52,7 +50,7 @@ func GetCR(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResul
 		output := fmt.Sprintf("Provide name for clusterrole")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -72,9 +70,8 @@ func GetCR(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResul
 	}
 
 	output := crData{
-		Name:      cr.Name,
-		Namespace: cr.Namespace,
-		Rules:     crRules,
+		Name:  cr.Name,
+		Rules: crRules,
 	}
 
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
@@ -90,7 +87,7 @@ func DeleteCR(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRe
 		output := fmt.Sprintf("Provide name for clusterrole")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -107,7 +104,7 @@ func CreateCRWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 		output := fmt.Sprintf("Provide jsonData for clusterrole")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	_, dynamicClient, err := client.InitializeClients()
+	_, dynamicClient, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -124,7 +121,7 @@ func CreateCRWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 
 	unstructuredObj := &unstructured.Unstructured{Object: obj}
 
-	_, err = dynamicClient.Resource(resourceId).Create(ctx, unstructuredObj , metav1.CreateOptions{})
+	_, err = dynamicClient.Resource(resourceId).Create(ctx, unstructuredObj, metav1.CreateOptions{})
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in creating clusterrole with jsondata: %v", err)), nil
 	}

@@ -18,7 +18,7 @@ type scData struct {
 }
 
 func ListSC(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -26,11 +26,9 @@ func ListSC(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResu
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in listing storageclass: %v", err)), nil
 	}
-	var output []scData
+	var output []string
 	for _, sclass := range sc.Items {
-		output = append(output, scData{
-			Name: sclass.Name,
-		})
+		output = append(output, sclass.Name)
 	}
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
 	if err != nil {
@@ -45,7 +43,7 @@ func GetSC(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResul
 		output := fmt.Sprintf("Provide name for storage class")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -72,7 +70,7 @@ func DeleteSC(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRe
 		output := fmt.Sprintf("Provide name for storageclass")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -89,7 +87,7 @@ func CreateSCWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 		output := fmt.Sprintf("Provide jsonData for storageclass")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	_, dynamicClient, err := client.InitializeClients()
+	_, dynamicClient, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -106,7 +104,7 @@ func CreateSCWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 
 	unstructuredObj := &unstructured.Unstructured{Object: obj}
 
-	_, err = dynamicClient.Resource(resourceId).Create(ctx, unstructuredObj , metav1.CreateOptions{})
+	_, err = dynamicClient.Resource(resourceId).Create(ctx, unstructuredObj, metav1.CreateOptions{})
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in creating storageclass with jsondata: %v", err)), nil
 	}

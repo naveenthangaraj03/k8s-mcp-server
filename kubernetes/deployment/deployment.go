@@ -9,10 +9,10 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strconv"
-	"strings"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"strconv"
+	"strings"
 )
 
 type deploymentData struct {
@@ -32,7 +32,7 @@ func ListDeploymentInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.
 	}
 	labels := request.GetString("label", "")
 
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -60,7 +60,7 @@ func ListDeploymentInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.
 
 func ListDeployment(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	labels := request.GetString("label", "")
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -104,7 +104,7 @@ func GetDeployment(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallT
 		output := fmt.Sprintf("Provide name for deployment")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -146,7 +146,7 @@ func DeleteDeployment(ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 		output := fmt.Sprintf("Provide name for deployment")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -175,7 +175,7 @@ func UpdateDeployment(ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 	image := request.GetString("image", "")
 	containerName := request.GetString("containerName", "")
 	replica := request.GetInt("replica", -1)
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -295,7 +295,7 @@ func CreateDeployment(ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 		return mcp.NewToolResultText(string(output)), nil
 	}
 	containerPorts := request.GetString("containerPorts", "http:8080")
-	clientset, _, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -398,7 +398,7 @@ func CreateDeploymentWithJson(ctx context.Context, request mcp.CallToolRequest) 
 		output := fmt.Sprintf("Provide jsonData for deployment")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	_, dynamicClient, err := client.InitializeClients()
+	_, dynamicClient, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -417,7 +417,7 @@ func CreateDeploymentWithJson(ctx context.Context, request mcp.CallToolRequest) 
 
 	ns := unstructuredObj.GetNamespace()
 
-	_, err = dynamicClient.Resource(resourceId).Namespace(ns).Create(ctx, unstructuredObj , metav1.CreateOptions{})
+	_, err = dynamicClient.Resource(resourceId).Namespace(ns).Create(ctx, unstructuredObj, metav1.CreateOptions{})
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in creating deployment with jsondata in %s namespace: %v", ns, err)), nil
 	}
