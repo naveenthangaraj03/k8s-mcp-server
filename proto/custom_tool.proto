@@ -9,6 +9,7 @@ message CustomRequest {
   string Method    = 2;
   string Name      = 3;
   string Namespace = 4;
+  string JsonData  = 5;
 }
 
 message CustomResponse {

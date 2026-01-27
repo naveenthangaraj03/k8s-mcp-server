@@ -1381,20 +1381,24 @@ var Custom = mcp.NewTool(
 	mcp.WithString(
 		"kind",
 		mcp.Required(),
-		mcp.Description("kind of the custom resource"),
+		mcp.Description("Kind of the custom resource"),
 	),
 	mcp.WithString(
 		"method",
 		mcp.Required(),
-		mcp.Description("method to work on that custom resource"),
+		mcp.Description("Method to work on that custom resource"),
 	),
 	mcp.WithString(
 		"name",
-		mcp.Description("name of the custom resource"),
+		mcp.Description("Name of the custom resource"),
 	),
 	mcp.WithString(
 		"namespace",
-		mcp.Description("namespace in which custom resource exits"),
+		mcp.Description("Namespace in which custom resource exits"),
+	),
+	mcp.WithString(
+		"jsondata",
+		mcp.Description("Json data to create the custom resource"),
 	),
 )
 

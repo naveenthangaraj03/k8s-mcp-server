@@ -6,6 +6,7 @@
 - Method 
 - Name
 - Namespace
+- JsonData
 
 ### List
 
@@ -32,3 +33,11 @@ The list of field avaiable to Delete custom resource:
 - Method: Required
 - Name: Required
 - Namespace: (Required if it is namepsaced)
+
+### Create
+
+The list of field available to create custom resource:
+
+- Kind: Required
+- Method: Required
+- JsonData: Required

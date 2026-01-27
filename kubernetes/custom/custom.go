@@ -29,6 +29,7 @@ func Custom(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResu
 	}
 	name := request.GetString("name", "")
 	namespace := request.GetString("namespace", "")
+	jsondata := request.GetString("jsondata", "")
 
 	if customURL == "" {
 		output := fmt.Sprintf("Provide custom URL to connect to grpc server")
@@ -48,6 +49,7 @@ func Custom(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResu
 		Method:    method,
 		Name:      name,
 		Namespace: namespace,
+		JsonData:  jsondata,
 	}
 
 	res, err := client.CustomTool(context.Background(), req)
