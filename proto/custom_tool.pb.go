@@ -27,6 +27,7 @@ type CustomRequest struct {
 	Method        string                 `protobuf:"bytes,2,opt,name=Method,proto3" json:"Method,omitempty"`
 	Name          string                 `protobuf:"bytes,3,opt,name=Name,proto3" json:"Name,omitempty"`
 	Namespace     string                 `protobuf:"bytes,4,opt,name=Namespace,proto3" json:"Namespace,omitempty"`
+	JsonData      string                 `protobuf:"bytes,5,opt,name=JsonData,proto3" json:"JsonData,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -89,6 +90,13 @@ func (x *CustomRequest) GetNamespace() string {
 	return ""
 }
 
+func (x *CustomRequest) GetJsonData() string {
+	if x != nil {
+		return x.JsonData
+	}
+	return ""
+}
+
 type CustomResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Result        string                 `protobuf:"bytes,1,opt,name=Result,proto3" json:"Result,omitempty"`
@@ -137,12 +145,13 @@ var File_proto_custom_tool_proto protoreflect.FileDescriptor
 
 const file_proto_custom_tool_proto_rawDesc = "" +
 	"\n" +
-	"\x17proto/custom_tool.proto\x12\x06custom\"m\n" +
+	"\x17proto/custom_tool.proto\x12\x06custom\"\x89\x01\n" +
 	"\rCustomRequest\x12\x12\n" +
 	"\x04Kind\x18\x01 \x01(\tR\x04Kind\x12\x16\n" +
 	"\x06Method\x18\x02 \x01(\tR\x06Method\x12\x12\n" +
 	"\x04Name\x18\x03 \x01(\tR\x04Name\x12\x1c\n" +
-	"\tNamespace\x18\x04 \x01(\tR\tNamespace\"(\n" +
+	"\tNamespace\x18\x04 \x01(\tR\tNamespace\x12\x1a\n" +
+	"\bJsonData\x18\x05 \x01(\tR\bJsonData\"(\n" +
 	"\x0eCustomResponse\x12\x16\n" +
 	"\x06Result\x18\x01 \x01(\tR\x06Result2R\n" +
 	"\x11CustomToolService\x12=\n" +

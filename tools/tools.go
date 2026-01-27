@@ -4,6 +4,7 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 )
 
+// Pod tools details
 var ListPodInNamespace = mcp.NewTool(
 	"list-pod-in-namespace",
 	mcp.WithDescription("List the pod in particular namespace with status, label and instance"),
@@ -134,6 +135,17 @@ var PodLog = mcp.NewTool(
 	),
 )
 
+var CreatePodWithJson = mcp.NewTool(
+	"create-pod-with-json",
+	mcp.WithDescription("Create pod with json data"),
+	mcp.WithString(
+		"jsondata",
+		mcp.Required(),
+		mcp.Description("Json data to create pod"),
+	),
+)
+
+// Namespace tools details
 var ListNS = mcp.NewTool(
 	"list-ns",
 	mcp.WithDescription("List the namespace in the kubernetes cluster with status"),
@@ -191,6 +203,17 @@ var CreateNS = mcp.NewTool(
 	),
 )
 
+var CreateNSWithJson = mcp.NewTool(
+	"create-ns-with-json",
+	mcp.WithDescription("Create namespace with json data"),
+	mcp.WithString(
+		"jsondata",
+		mcp.Required(),
+		mcp.Description("Json data to create namespace"),
+	),
+)
+
+// Deployment tools details
 var ListDeploymentInNamespace = mcp.NewTool(
 	"list-deployment-in-namespace",
 	mcp.WithDescription("List the deployment in particular namespace with available instance and label"),
@@ -316,6 +339,17 @@ var CreateDeployment = mcp.NewTool(
 	),
 )
 
+var CreateDeploymentWithJson = mcp.NewTool(
+	"create-deployment-with-json",
+	mcp.WithDescription("Create deployment with json data"),
+	mcp.WithString(
+		"jsondata",
+		mcp.Required(),
+		mcp.Description("Json data to create deployment"),
+	),
+)
+
+// Service tools details
 var ListServiceInNamespace = mcp.NewTool(
 	"list-service-in-namespace",
 	mcp.WithDescription("List the service in particular namespace with type"),
@@ -418,6 +452,17 @@ var CreateService = mcp.NewTool(
 	),
 )
 
+var CreateServiceWithJson = mcp.NewTool(
+	"create-service-with-json",
+	mcp.WithDescription("Create service with json data"),
+	mcp.WithString(
+		"jsondata",
+		mcp.Required(),
+		mcp.Description("Json data to create service"),
+	),
+)
+
+// Statefulset tools details
 var ListStatefulsetInNamespace = mcp.NewTool(
 	"list-statefulset-in-namespace",
 	mcp.WithDescription("List the statefulset in particular namespace with available instance and label"),
@@ -564,6 +609,17 @@ var CreateStatefulset = mcp.NewTool(
 	),
 )
 
+var CreateStatefulsetWithJson = mcp.NewTool(
+	"create-statefulset-with-json",
+	mcp.WithDescription("Create statefulset with json data"),
+	mcp.WithString(
+		"jsondata",
+		mcp.Required(),
+		mcp.Description("Json data to create statefulset"),
+	),
+)
+
+// Daemonset tools details
 var ListDaemonsetInNamespace = mcp.NewTool(
 	"list-daemonset-in-namespace",
 	mcp.WithDescription("List the daemonset in particular namespace with available instance and label"),
@@ -681,6 +737,17 @@ var CreateDaemonset = mcp.NewTool(
 	),
 )
 
+var CreateDaemonsetWithJson = mcp.NewTool(
+	"create-daemonset-with-json",
+	mcp.WithDescription("Create daemonset with json data"),
+	mcp.WithString(
+		"jsondata",
+		mcp.Required(),
+		mcp.Description("Json data to create daemonset"),
+	),
+)
+
+// Configmap tools details
 var ListConfigmapInNamespace = mcp.NewTool(
 	"list-configmap-in-namespace",
 	mcp.WithDescription("List the configmap in particular namespace"),
@@ -746,6 +813,17 @@ var CreateConfigmap = mcp.NewTool(
 	),
 )
 
+var CreateConfigmapWithJson = mcp.NewTool(
+	"create-configmap-with-json",
+	mcp.WithDescription("Create configmap with json data"),
+	mcp.WithString(
+		"jsondata",
+		mcp.Required(),
+		mcp.Description("Json data to create configmap"),
+	),
+)
+
+// Secret tools details
 var ListSecretInNamespace = mcp.NewTool(
 	"list-secret-in-namespace",
 	mcp.WithDescription("List the secret in particular namespace"),
@@ -811,6 +889,17 @@ var CreateSecret = mcp.NewTool(
 	),
 )
 
+var CreateSecretWithJson = mcp.NewTool(
+	"create-secret-with-json",
+	mcp.WithDescription("Create secret with json data"),
+	mcp.WithString(
+		"jsondata",
+		mcp.Required(),
+		mcp.Description("Json data to create secret"),
+	),
+)
+
+// Node tools details
 var ListNode = mcp.NewTool(
 	"list-node",
 	mcp.WithDescription("List the node in the kubernetes cluster with status"),
@@ -851,6 +940,7 @@ var UpdateNode = mcp.NewTool(
 	),
 )
 
+// ServiceAccount tools details
 var ListSA = mcp.NewTool(
 	"list-serviceAccount",
 	mcp.WithDescription("List the serviceAccount in all the namespace"),
@@ -923,6 +1013,17 @@ var CreateSA = mcp.NewTool(
 	),
 )
 
+var CreateSAWithJson = mcp.NewTool(
+	"create-sa-with-json",
+	mcp.WithDescription("Create service account with json data"),
+	mcp.WithString(
+		"jsondata",
+		mcp.Required(),
+		mcp.Description("Json data to create service account"),
+	),
+)
+
+// PVC tools details
 var ListPVCInNS = mcp.NewTool(
 	"list-pvc-in-namespace",
 	mcp.WithDescription("List the pvc in particular namespace"),
@@ -1017,6 +1118,17 @@ var CreatePVC = mcp.NewTool(
 	),
 )
 
+var CreatePVCWithJson = mcp.NewTool(
+	"create-pvc-with-json",
+	mcp.WithDescription("Create pvc with json data"),
+	mcp.WithString(
+		"jsondata",
+		mcp.Required(),
+		mcp.Description("Json data to create pvc"),
+	),
+)
+
+// PV tools details
 var ListPV = mcp.NewTool(
 	"list-pv",
 	mcp.WithDescription("List the entire pv"),
@@ -1042,6 +1154,7 @@ var DeletePV = mcp.NewTool(
 	),
 )
 
+// Role tools details
 var ListRoleInNS = mcp.NewTool(
 	"list-role-in-namespace",
 	mcp.WithDescription("List the role in particular namespace"),
@@ -1072,6 +1185,32 @@ var GetRole = mcp.NewTool(
 	),
 )
 
+var DeleteRole = mcp.NewTool(
+	"delete-role",
+	mcp.WithDescription("Delete role in particular namespace"),
+	mcp.WithString(
+		"name",
+		mcp.Required(),
+		mcp.Description("Name of the role to be deleted"),
+	),
+	mcp.WithString(
+		"namespace",
+		mcp.Required(),
+		mcp.Description("Namespace of the role"),
+	),
+)
+
+var CreateRoleWithJson = mcp.NewTool(
+	"create-role-with-json",
+	mcp.WithDescription("Create role with json data"),
+	mcp.WithString(
+		"jsondata",
+		mcp.Required(),
+		mcp.Description("Json data to create role"),
+	),
+)
+
+// RoleBinding tools details
 var ListRBInNS = mcp.NewTool(
 	"list-rolebinding-in-namespace",
 	mcp.WithDescription("List the rolebinding in particular namespace"),
@@ -1102,6 +1241,32 @@ var GetRB = mcp.NewTool(
 	),
 )
 
+var DeleteRB = mcp.NewTool(
+	"delete-rolebinding",
+	mcp.WithDescription("Delete rolebinding in particular namespace"),
+	mcp.WithString(
+		"name",
+		mcp.Required(),
+		mcp.Description("Name of the rolebinding to be deleted"),
+	),
+	mcp.WithString(
+		"namespace",
+		mcp.Required(),
+		mcp.Description("Namespace of the rolebinding"),
+	),
+)
+
+var CreateRBWithJson = mcp.NewTool(
+	"create-rolebinding-with-json",
+	mcp.WithDescription("Create role binding with json data"),
+	mcp.WithString(
+		"jsondata",
+		mcp.Required(),
+		mcp.Description("Json data to create role binding"),
+	),
+)
+
+// ClusterRole tools details
 var ListCR = mcp.NewTool(
 	"list-clusterrole",
 	mcp.WithDescription("List all the clusterrole in the cluster"),
@@ -1117,6 +1282,27 @@ var GetCR = mcp.NewTool(
 	),
 )
 
+var DeleteCR = mcp.NewTool(
+	"delete-clusterrole",
+	mcp.WithDescription("Delete cluster role in the cluster"),
+	mcp.WithString(
+		"name",
+		mcp.Required(),
+		mcp.Description("Name of the cluster role to be deleted"),
+	),
+)
+
+var CreateCRWithJson = mcp.NewTool(
+	"create-clusterrole-with-json",
+	mcp.WithDescription("Create cluster role with json data"),
+	mcp.WithString(
+		"jsondata",
+		mcp.Required(),
+		mcp.Description("Json data to create cluster role"),
+	),
+)
+
+// ClusterRoleBinding tools details
 var ListCRB = mcp.NewTool(
 	"list-clusterrolebinding",
 	mcp.WithDescription("List all the clusterrolebinding in the cluster"),
@@ -1132,6 +1318,27 @@ var GetCRB = mcp.NewTool(
 	),
 )
 
+var DeleteCRB = mcp.NewTool(
+	"delete-clusterrolebinding",
+	mcp.WithDescription("Delete cluster role binding in the cluster"),
+	mcp.WithString(
+		"name",
+		mcp.Required(),
+		mcp.Description("Name of the cluster role binding to be deleted"),
+	),
+)
+
+var CreateCRBWithJson = mcp.NewTool(
+	"create-clusterrolebinding-with-json",
+	mcp.WithDescription("Create cluster role binding with json data"),
+	mcp.WithString(
+		"jsondata",
+		mcp.Required(),
+		mcp.Description("Json data to create cluster role binding"),
+	),
+)
+
+// StorageClass tools details
 var ListSC = mcp.NewTool(
 	"list-storageClass",
 	mcp.WithDescription("List the storageClass in the entier cluster"),
@@ -1147,25 +1354,86 @@ var GetSC = mcp.NewTool(
 	),
 )
 
+var DeleteSC = mcp.NewTool(
+	"delete-storeageclass",
+	mcp.WithDescription("Delete storage class in the cluster"),
+	mcp.WithString(
+		"name",
+		mcp.Required(),
+		mcp.Description("Name of the storageclass to be deleted"),
+	),
+)
+
+var CreateSCWithJson = mcp.NewTool(
+	"create-storageclass-with-json",
+	mcp.WithDescription("Create storageclass with json data"),
+	mcp.WithString(
+		"jsondata",
+		mcp.Required(),
+		mcp.Description("Json data to create storageclass"),
+	),
+)
+
+// cutom tool details
 var Custom = mcp.NewTool(
 	"custom",
 	mcp.WithDescription("Working with custom resource"),
 	mcp.WithString(
 		"kind",
 		mcp.Required(),
-		mcp.Description("kind of the custom resource"),
+		mcp.Description("Kind of the custom resource"),
 	),
 	mcp.WithString(
 		"method",
 		mcp.Required(),
-		mcp.Description("method to work on that custom resource"),
+		mcp.Description("Method to work on that custom resource"),
 	),
 	mcp.WithString(
 		"name",
-		mcp.Description("name of the custom resource"),
+		mcp.Description("Name of the custom resource"),
 	),
 	mcp.WithString(
 		"namespace",
-		mcp.Description("namespace in which custom resource exits"),
+		mcp.Description("Namespace in which custom resource exits"),
+	),
+	mcp.WithString(
+		"jsondata",
+		mcp.Description("Json data to create the custom resource"),
+	),
+)
+
+// CRD tools details
+var ListCRD = mcp.NewTool(
+	"list-crd",
+	mcp.WithDescription("List the crds in the cluster"),
+)
+
+var GetCRD = mcp.NewTool(
+	"get-crd",
+	mcp.WithDescription("Get the particular crd in the cluster"),
+	mcp.WithString(
+		"name",
+		mcp.Required(),
+		mcp.Description("Name of the crd to get"),
+	),
+)
+
+var DeleteCRD = mcp.NewTool(
+	"delete-crd",
+	mcp.WithDescription("Delete the particular crd in the cluster"),
+	mcp.WithString(
+		"name",
+		mcp.Required(),
+		mcp.Description("Name of the crd to be deleted"),
+	),
+)
+
+var CreateCRDWithJson = mcp.NewTool(
+	"create-crd-with-json",
+	mcp.WithDescription("Create crd with json data"),
+	mcp.WithString(
+		"jsondata",
+		mcp.Required(),
+		mcp.Description("Json data to create crd"),
 	),
 )

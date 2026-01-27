@@ -12,7 +12,6 @@ import (
 
 type pvData struct {
 	Name         string   `json:"name,omitempty"`
-	Namespace    string   `json:"namespace,omitempty"`
 	Status       string   `json:"status,omitempty"`
 	Capacity     string   `json:"capacity,omitempty"`
 	AccessMode   []string `json:"accessMode,omitempty"`
@@ -20,7 +19,7 @@ type pvData struct {
 }
 
 func ListPV(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	clientset, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -32,10 +31,9 @@ func ListPV(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResu
 	for _, pv := range pvolume.Items {
 		qty := pv.Spec.Capacity[v1.ResourceStorage]
 		output = append(output, pvData{
-			Name:      pv.Name,
-			Namespace: pv.Namespace,
-			Capacity:  qty.String(),
-			Status:    string(pv.Status.Phase),
+			Name:     pv.Name,
+			Capacity: qty.String(),
+			Status:   string(pv.Status.Phase),
 		})
 	}
 	mcpOutput, err := json.MarshalIndent(output, "", " ")
@@ -51,7 +49,7 @@ func GetPV(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResul
 		output := fmt.Sprintf("Provide name for pv")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -68,7 +66,6 @@ func GetPV(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResul
 
 	output := pvData{
 		Name:         pv.Name,
-		Namespace:    pv.Namespace,
 		Capacity:     qty.String(),
 		AccessMode:   accMode,
 		StorageClass: pv.Spec.StorageClassName,
@@ -87,7 +84,7 @@ func DeletePV(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRe
 		output := fmt.Sprintf("Provide name for pv")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, err := client.InitializeClients()
+	clientset, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}

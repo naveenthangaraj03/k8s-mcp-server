@@ -16,6 +16,11 @@ The list of fields available to create statefulset(As of now sts creation will s
 - Label: Optional field
 - Replica: Optional field
 
+### Create With Json
+
+The list of fields available to create the statefulset:
+- JsonData: Required field
+
 ### List
 
 The list of fields available to list statefulset in particular namespace:

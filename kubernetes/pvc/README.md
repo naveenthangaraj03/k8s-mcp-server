@@ -34,3 +34,8 @@ The list of fields available to create the persistent volume claim:
 - Size: Required field
 - StorageClass: Required field
 - AccessMode: Optional field
+
+### Create With Json
+
+The list of fields available to create the persistent volume claim:
+- JsonData: Required field

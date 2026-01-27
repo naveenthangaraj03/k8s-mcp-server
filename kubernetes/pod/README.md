@@ -10,6 +10,11 @@ The list of field available to create pod:
 - ContainerPorts: Required filed(If more than one containers just pass the port details separate by "," and if there are more port details for single container separate by "|". Ex: http:80|https:443,http:80)
 - Label: Optional field
 
+### Create With Json
+
+The list of fields available to create the pod:
+- JsonData: Required field
+
 ### List
 
 The list of fields available to list pods in particular namespace:

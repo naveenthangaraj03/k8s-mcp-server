@@ -8,3 +8,13 @@ No filed is required to list the clusterrolebinding.
 
 The list of fields available to get the clusterrolebinding:
 - Name: Required field
+
+### Delete
+
+The list of fields available to delete the clusterrolebinding:
+- Name: Required field
+
+### Create With Json
+
+The list of fields available to create the clusterrolebinding:
+- JsonData: Required field
