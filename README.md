@@ -61,14 +61,14 @@ go install github.com/naveenthangaraj03/k8s-mcp-server@latest
 ## Running MCP Server
 
 Claude Desktop:
-Add the following configuration to yours claude config file.
+Add the following configuration to yours claude config file. If you are running MCP Server as local setup.
 
 ```
 {
     "mcpServers": {
         "Kubernetes": {
             "command": "k8s-mcp-server",
-            "args": ["--kubeconfigPath=<Path to kubeconfig file>"]
+            "args": ["--kubeconfigPath=<Path to kubeconfig file>", "--mode=stdio"]
         }
     }
 }
@@ -81,9 +81,22 @@ Enable the custom tool by using the `--customURL` flag.
     "mcpServers": {
         "Kubernetes": {
             "command": "k8s-mcp-server",
-            "args": ["--kubeconfigPath=<Path to kubeconfig file>","--customURL=<grpc server url>"]
+            "args": ["--kubeconfigPath=<Path to kubeconfig file>","--customURL=<grpc server url>", "--mode=stdio"]
         }
     }
+}
+```
+
+Cursor:
+Add the following configuration to yours cursor. If you are running MCP Server as remote setup.
+
+```
+{
+  "mcpServers": {
+    "kuberentes": {
+      "url": "<URL for remote mcp server>/mcp"
+    }
+  }
 }
 ```
 

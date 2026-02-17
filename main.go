@@ -3,8 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
-	"net/http"
 	"github.com/mark3labs/mcp-go/server"
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/clusterrole"
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/clusterrolebinding"
@@ -26,12 +24,14 @@ import (
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/statefulset"
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/storageclass"
 	"github.com/naveenthangaraj03/k8s-mcp-server/tools"
+	"log"
+	"net/http"
 )
 
 var mode string
 
 func init() {
-	flag.StringVar(&mode, "mode", "stdio", "MCP server mode")
+	flag.StringVar(&mode, "mode", "http", "MCP server mode")
 }
 
 func main() {
@@ -182,7 +182,7 @@ func main() {
 	s.AddTool(tools.Custom, custom.Custom)
 
 	if mode == "http" {
-		handler := server.NewStreamableHTTPServer(s)
+		handler := server.NewStreamableHTTPServer(s, server.WithDisableStreaming(true))
 		http.HandleFunc("/mcp", handler.ServeHTTP)
 		log.Println("Starting Kuberentes MCP Server")
 		if err := http.ListenAndServe(":8080", nil); err != nil {

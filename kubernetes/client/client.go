@@ -18,7 +18,7 @@ func init() {
 func InitializeClients() (*kubernetes.Clientset, dynamic.Interface, *apiextensionsclient.Clientset, error) {
 
 	var config *rest.Config
-    var err error
+	var err error
 	if kubeconfigPath == "" {
 		config, err = rest.InClusterConfig()
 		if err != nil {
