@@ -7,11 +7,6 @@ The list of field available to create secret:
 - Name: Required field
 - Data: Required field(If there are more than one data just separate by ",". Ex: password=Passw0rd@123,username=admin)
 
-### Create With Json
-
-The list of fields available to create the secret:
-- JsonData: Required field
-
 ### List
 
 The list of fields available to list secret in particular namespace:

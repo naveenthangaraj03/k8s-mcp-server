@@ -8,8 +8,6 @@ import (
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"strings"
 )
 
@@ -19,48 +17,39 @@ type cmData struct {
 	Data      map[string]string `json:"data,omitempty"`
 }
 
-func ListConfigmapInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	ns, err := request.RequireString("namespace")
-	if err != nil {
-		output := fmt.Sprintf("Provide namespace for configmap")
-		return mcp.NewToolResultText(string(output)), nil
-	}
-	clientset, _, _, err := client.InitializeClients()
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
-	}
-	configmaps, err := clientset.CoreV1().ConfigMaps(ns).List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in listing configmaps in %s: %v", ns, err)), nil
-	}
-	var output []cmData
-	for _, configmap := range configmaps.Items {
-		output = append(output, cmData{
-			Name:      configmap.Name,
-			Namespace: configmap.Namespace,
-		})
-	}
-	mcpOutput, err := json.MarshalIndent(output, "", " ")
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
-	}
-	return mcp.NewToolResultText(string(mcpOutput)), nil
-}
-
 func ListConfigmap(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	clientset, _, _, err := client.InitializeClients()
+	ns := request.GetString("namespace", "")
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
-	namespaces, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in listing namespace: %v", err)), nil
-	}
 	var output []cmData
-	for _, namespace := range namespaces.Items {
-		configmaps, err := clientset.CoreV1().ConfigMaps(namespace.Name).List(context.TODO(), metav1.ListOptions{})
+	if ns == ""{
+		namespaces, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
-			return mcp.NewToolResultText(fmt.Sprintf("Error in listing configmaps in %s: %v", namespace.Name, err)), nil
+			return mcp.NewToolResultText(fmt.Sprintf("Error in listing namespace: %v", err)), nil
+		}
+		for _, namespace := range namespaces.Items {
+			configmaps, err := clientset.CoreV1().ConfigMaps(namespace.Name).List(context.TODO(), metav1.ListOptions{})
+			if err != nil {
+				return mcp.NewToolResultText(fmt.Sprintf("Error in listing configmaps in %s: %v", namespace.Name, err)), nil
+			}
+			for _, configmap := range configmaps.Items {
+				output = append(output, cmData{
+					Name:      configmap.Name,
+					Namespace: configmap.Namespace,
+				})
+			}
+		}
+		mcpOutput, err := json.MarshalIndent(output, "", " ")
+		if err != nil {
+			return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
+		}
+		return mcp.NewToolResultText(string(mcpOutput)), nil
+	} else {
+		configmaps, err := clientset.CoreV1().ConfigMaps(ns).List(context.TODO(), metav1.ListOptions{})
+		if err != nil {
+			return mcp.NewToolResultText(fmt.Sprintf("Error in listing configmaps in %s namespace: %v", ns, err)), nil
 		}
 		for _, configmap := range configmaps.Items {
 			output = append(output, cmData{
@@ -68,12 +57,12 @@ func ListConfigmap(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallT
 				Namespace: configmap.Namespace,
 			})
 		}
+		mcpOutput, err := json.MarshalIndent(output, "", " ")
+		if err != nil {
+			return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
+		}
+		return mcp.NewToolResultText(string(mcpOutput)), nil
 	}
-	mcpOutput, err := json.MarshalIndent(output, "", " ")
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
-	}
-	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
 func GetConfigmap(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -87,13 +76,13 @@ func GetConfigmap(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTo
 		output := fmt.Sprintf("Provide name for configmap")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
 	configmap, err := clientset.CoreV1().ConfigMaps(ns).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in getting configmaps in %s/%s: %v", ns, name, err)), nil
+		return mcp.NewToolResultText(fmt.Sprintf("Error in getting configmap in %s/%s: %v", ns, name, err)), nil
 	}
 	output := cmData{
 		Name:      configmap.Name,
@@ -118,7 +107,7 @@ func DeleteConfigmap(ctx context.Context, request mcp.CallToolRequest) (*mcp.Cal
 		output := fmt.Sprintf("Provide name for configmap")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -147,7 +136,7 @@ func CreateConfigmap(ctx context.Context, request mcp.CallToolRequest) (*mcp.Cal
 		return mcp.NewToolResultText(string(output)), nil
 	}
 
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -177,36 +166,4 @@ func CreateConfigmap(ctx context.Context, request mcp.CallToolRequest) (*mcp.Cal
 	}
 	output := fmt.Sprintf("Successfully configmap %s/%s is created", createConfigmap.Namespace, createConfigmap.Name)
 	return mcp.NewToolResultText(string(output)), nil
-}
-
-func CreateConfigmapWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	jsondata, err := request.RequireString("jsondata")
-	if err != nil {
-		output := fmt.Sprintf("Provide jsonData for configmap")
-		return mcp.NewToolResultText(string(output)), nil
-	}
-	_, dynamicClient, _, err := client.InitializeClients()
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
-	}
-	resourceId := schema.GroupVersionResource{
-		Group:    "",
-		Version:  "v1",
-		Resource: "configmaps",
-	}
-
-	var obj map[string]interface{}
-	if err := json.Unmarshal([]byte(jsondata), &obj); err != nil {
-		return nil, err
-	}
-
-	unstructuredObj := &unstructured.Unstructured{Object: obj}
-
-	ns := unstructuredObj.GetNamespace()
-
-	_, err = dynamicClient.Resource(resourceId).Namespace(ns).Create(ctx, unstructuredObj, metav1.CreateOptions{})
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in creating configmap with jsondata in %s namespace: %v", ns, err)), nil
-	}
-	return mcp.NewToolResultText(fmt.Sprintf("Successfully created configmap with jsondata in %s namespace", ns)), nil
 }

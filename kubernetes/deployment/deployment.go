@@ -9,8 +9,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"strconv"
 	"strings"
 )
@@ -24,58 +22,46 @@ type deploymentData struct {
 	ContainerImage    []string          `json:"containerImage,omitempty"`
 }
 
-func ListDeploymentInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	ns, err := request.RequireString("namespace")
-	if err != nil {
-		output := fmt.Sprintf("Provide namespace for deployment")
-		return mcp.NewToolResultText(string(output)), nil
-	}
-	labels := request.GetString("label", "")
-
-	clientset, _, _, err := client.InitializeClients()
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
-	}
-	deployments, err := clientset.AppsV1().Deployments(ns).List(context.TODO(), metav1.ListOptions{
-		LabelSelector: labels,
-	})
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in listing deployment %s: %v", ns, err)), nil
-	}
-	var output []deploymentData
-	for _, deployment := range deployments.Items {
-		output = append(output, deploymentData{
-			Name:              deployment.Name,
-			Namespace:         deployment.Namespace,
-			AvailableInstance: fmt.Sprintf("%d/%d", deployment.Status.ReadyReplicas, *deployment.Spec.Replicas),
-			Labels:            deployment.Labels,
-		})
-	}
-	mcpOutput, err := json.MarshalIndent(output, "", " ")
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
-	}
-	return mcp.NewToolResultText(string(mcpOutput)), nil
-}
-
 func ListDeployment(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	ns := request.GetString("namespace", "")
 	labels := request.GetString("label", "")
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
-	namespaces, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in listing namespace: %v", err)), nil
-	}
-
 	var output []deploymentData
-	for _, namespace := range namespaces.Items {
-		deployments, err := clientset.AppsV1().Deployments(namespace.Name).List(context.TODO(), metav1.ListOptions{
+	if ns == "" {
+		namespaces, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
+		if err != nil {
+			return mcp.NewToolResultText(fmt.Sprintf("Error in listing namespace: %v", err)), nil
+		}
+		for _, namespace := range namespaces.Items {
+			deployments, err := clientset.AppsV1().Deployments(namespace.Name).List(context.TODO(), metav1.ListOptions{
+				LabelSelector: labels,
+			})
+			if err != nil {
+				return mcp.NewToolResultText(fmt.Sprintf("Error in listing deployment in %s namespace: %v", namespace.Name, err)), nil
+			}
+			for _, deployment := range deployments.Items {
+				output = append(output, deploymentData{
+					Name:              deployment.Name,
+					Namespace:         deployment.Namespace,
+					AvailableInstance: fmt.Sprintf("%d/%d", deployment.Status.ReadyReplicas, *deployment.Spec.Replicas),
+					Labels:            deployment.Labels,
+				})
+			}
+		}
+		mcpOutput, err := json.MarshalIndent(output, "", " ")
+		if err != nil {
+			return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
+		}
+		return mcp.NewToolResultText(string(mcpOutput)), nil
+	} else {
+		deployments, err := clientset.AppsV1().Deployments(ns).List(context.TODO(), metav1.ListOptions{
 			LabelSelector: labels,
 		})
 		if err != nil {
-			return mcp.NewToolResultText(fmt.Sprintf("Error in listing deployment %s: %v", namespace.Name, err)), nil
+			return mcp.NewToolResultText(fmt.Sprintf("Error in listing deployment in %s namespace: %v", ns, err)), nil
 		}
 		for _, deployment := range deployments.Items {
 			output = append(output, deploymentData{
@@ -85,12 +71,12 @@ func ListDeployment(ctx context.Context, request mcp.CallToolRequest) (*mcp.Call
 				Labels:            deployment.Labels,
 			})
 		}
+		mcpOutput, err := json.MarshalIndent(output, "", " ")
+		if err != nil {
+			return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
+		}
+		return mcp.NewToolResultText(string(mcpOutput)), nil
 	}
-	mcpOutput, err := json.MarshalIndent(output, "", " ")
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
-	}
-	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
 func GetDeployment(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -104,7 +90,7 @@ func GetDeployment(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallT
 		output := fmt.Sprintf("Provide name for deployment")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -146,7 +132,7 @@ func DeleteDeployment(ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 		output := fmt.Sprintf("Provide name for deployment")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -175,7 +161,7 @@ func UpdateDeployment(ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 	image := request.GetString("image", "")
 	containerName := request.GetString("containerName", "")
 	replica := request.GetInt("replica", -1)
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -295,7 +281,7 @@ func CreateDeployment(ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 		return mcp.NewToolResultText(string(output)), nil
 	}
 	containerPorts := request.GetString("containerPorts", "http:8080")
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -390,36 +376,4 @@ func CreateDeployment(ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 	}
 	output := fmt.Sprintf("Successfully deployment %s/%s is created", deployDeployment.Namespace, deployDeployment.Name)
 	return mcp.NewToolResultText(string(output)), nil
-}
-
-func CreateDeploymentWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	jsondata, err := request.RequireString("jsondata")
-	if err != nil {
-		output := fmt.Sprintf("Provide jsonData for deployment")
-		return mcp.NewToolResultText(string(output)), nil
-	}
-	_, dynamicClient, _, err := client.InitializeClients()
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
-	}
-	resourceId := schema.GroupVersionResource{
-		Group:    "apps",
-		Version:  "v1",
-		Resource: "deployments",
-	}
-
-	var obj map[string]interface{}
-	if err := json.Unmarshal([]byte(jsondata), &obj); err != nil {
-		return nil, err
-	}
-
-	unstructuredObj := &unstructured.Unstructured{Object: obj}
-
-	ns := unstructuredObj.GetNamespace()
-
-	_, err = dynamicClient.Resource(resourceId).Namespace(ns).Create(ctx, unstructuredObj, metav1.CreateOptions{})
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in creating deployment with jsondata in %s namespace: %v", ns, err)), nil
-	}
-	return mcp.NewToolResultText(fmt.Sprintf("Successfully created deployment with jsondata in %s namespace", ns)), nil
 }

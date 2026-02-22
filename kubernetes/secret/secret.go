@@ -8,8 +8,6 @@ import (
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"strings"
 )
 
@@ -19,48 +17,39 @@ type secretData struct {
 	Data      map[string][]byte `json:"data,omitempty"`
 }
 
-func ListSecretInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	ns, err := request.RequireString("namespace")
-	if err != nil {
-		output := fmt.Sprintf("Provide namespace for secret")
-		return mcp.NewToolResultText(string(output)), nil
-	}
-	clientset, _, _, err := client.InitializeClients()
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
-	}
-	secrets, err := clientset.CoreV1().Secrets(ns).List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in listing secrets in %s: %v", ns, err)), nil
-	}
-	var output []secretData
-	for _, secret := range secrets.Items {
-		output = append(output, secretData{
-			Name:      secret.Name,
-			Namespace: secret.Namespace,
-		})
-	}
-	mcpOutput, err := json.MarshalIndent(output, "", " ")
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
-	}
-	return mcp.NewToolResultText(string(mcpOutput)), nil
-}
-
 func ListSecret(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	clientset, _, _, err := client.InitializeClients()
+	ns := request.GetString("namespace", "")
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
-	namespaces, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in listing namespace: %v", err)), nil
-	}
 	var output []secretData
-	for _, namespace := range namespaces.Items {
-		secrets, err := clientset.CoreV1().Secrets(namespace.Name).List(context.TODO(), metav1.ListOptions{})
+	if ns == "" {
+		namespaces, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
-			return mcp.NewToolResultText(fmt.Sprintf("Error in listing secret in %s: %v", namespace.Name, err)), nil
+			return mcp.NewToolResultText(fmt.Sprintf("Error in listing namespace: %v", err)), nil
+		}
+		for _, namespace := range namespaces.Items {
+			secrets, err := clientset.CoreV1().Secrets(namespace.Name).List(context.TODO(), metav1.ListOptions{})
+			if err != nil {
+				return mcp.NewToolResultText(fmt.Sprintf("Error in listing secret in %s: %v", namespace.Name, err)), nil
+			}
+			for _, secret := range secrets.Items {
+				output = append(output, secretData{
+					Name:      secret.Name,
+					Namespace: secret.Namespace,
+				})
+			}
+		}
+		mcpOutput, err := json.MarshalIndent(output, "", " ")
+		if err != nil {
+			return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
+		}
+		return mcp.NewToolResultText(string(mcpOutput)), nil
+	} else {
+		secrets, err := clientset.CoreV1().Secrets(ns).List(context.TODO(), metav1.ListOptions{})
+		if err != nil {
+			return mcp.NewToolResultText(fmt.Sprintf("Error in listing secrets in %s: %v", ns, err)), nil
 		}
 		for _, secret := range secrets.Items {
 			output = append(output, secretData{
@@ -68,12 +57,12 @@ func ListSecret(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTool
 				Namespace: secret.Namespace,
 			})
 		}
+		mcpOutput, err := json.MarshalIndent(output, "", " ")
+		if err != nil {
+			return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
+		}
+		return mcp.NewToolResultText(string(mcpOutput)), nil
 	}
-	mcpOutput, err := json.MarshalIndent(output, "", " ")
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
-	}
-	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
 func GetSecret(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -87,7 +76,7 @@ func GetSecret(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolR
 		output := fmt.Sprintf("Provide name for secret")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -120,7 +109,7 @@ func DeleteSecret(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTo
 		output := fmt.Sprintf("Provide name for secret delete")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -150,7 +139,7 @@ func CreateSecret(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTo
 		return mcp.NewToolResultText(string(output)), nil
 	}
 
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -181,36 +170,4 @@ func CreateSecret(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTo
 	}
 	output := fmt.Sprintf("Successfully secret %s/%s is created", createSecret.Namespace, createSecret.Name)
 	return mcp.NewToolResultText(string(output)), nil
-}
-
-func CreateSecretWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	jsondata, err := request.RequireString("jsondata")
-	if err != nil {
-		output := fmt.Sprintf("Provide jsonData for secret")
-		return mcp.NewToolResultText(string(output)), nil
-	}
-	_, dynamicClient, _, err := client.InitializeClients()
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
-	}
-	resourceId := schema.GroupVersionResource{
-		Group:    "",
-		Version:  "v1",
-		Resource: "secrets",
-	}
-
-	var obj map[string]interface{}
-	if err := json.Unmarshal([]byte(jsondata), &obj); err != nil {
-		return nil, err
-	}
-
-	unstructuredObj := &unstructured.Unstructured{Object: obj}
-
-	ns := unstructuredObj.GetNamespace()
-
-	_, err = dynamicClient.Resource(resourceId).Namespace(ns).Create(ctx, unstructuredObj, metav1.CreateOptions{})
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in creating secret with jsondata in %s namespace: %v", ns, err)), nil
-	}
-	return mcp.NewToolResultText(fmt.Sprintf("Successfully created secret with jsondata in %s namespace", ns)), nil
 }

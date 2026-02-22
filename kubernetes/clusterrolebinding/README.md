@@ -13,8 +13,3 @@ The list of fields available to get the clusterrolebinding:
 
 The list of fields available to delete the clusterrolebinding:
 - Name: Required field
-
-### Create With Json
-
-The list of fields available to create the clusterrolebinding:
-- JsonData: Required field

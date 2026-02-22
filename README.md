@@ -18,14 +18,14 @@ k8s-mcp-server is a Golang based Model Context Protocol (MCP) server that expose
 - ServiceAccount: Create, Get, List and Delete.
 - PVC: Create, Get, List, Update and Delete.
 - PV: List, Get and Delete.
-- Role: Create, Get, List and Delete.
-- RoleBinding: Create, Get, List and Delete.
-- ClusterRole: Create, Get, List and Delete.
-- ClusterRoleBinding: Create, Get, List and Delete.
-- Storageclass: Create, Get, List and Delete.
+- Role: Get, List and Delete.
+- RoleBinding: Get, List and Delete.
+- ClusterRole: Get, List and Delete.
+- ClusterRoleBinding: Get, List and Delete.
+- Storageclass: Get, List and Delete.
 - CRD: Create, Get, List and Delete.
 
-Create supports json data as well.
+Create any kubernetes resource by passing json data.
 
 All interactions are performed via Kubernetes API using the provided kubeconfig.
 

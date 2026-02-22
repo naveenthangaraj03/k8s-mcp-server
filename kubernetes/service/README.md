@@ -10,11 +10,6 @@ The list of field available to create service
 - ServicePort: Required field(If more than one service port details just separate by ",". Ex: http:8080,metrics:9090)
 - ServiceType: Optional field
 
-### Create With Json
-
-The list of fields available to create the service:
-- JsonData: Required field
-
 ### List
 
 The list of fields available to list servcie in particular namespace:

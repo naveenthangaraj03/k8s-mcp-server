@@ -10,8 +10,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"strings"
 )
@@ -25,58 +23,46 @@ type stsData struct {
 	ContainerImage    []string          `json:"containerImage,omitempty"`
 }
 
-func ListStatefulsetInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	ns, err := request.RequireString("namespace")
-	if err != nil {
-		output := fmt.Sprintf("Provide namespace for statefulset")
-		return mcp.NewToolResultText(string(output)), nil
-	}
-	labels := request.GetString("label", "")
-
-	clientset, _, _, err := client.InitializeClients()
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
-	}
-	statefulsets, err := clientset.AppsV1().StatefulSets(ns).List(context.TODO(), metav1.ListOptions{
-		LabelSelector: labels,
-	})
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in listing statefulset in %s: %v", ns, err)), nil
-	}
-	var output []stsData
-	for _, statefulset := range statefulsets.Items {
-		output = append(output, stsData{
-			Name:              statefulset.Name,
-			Namespace:         statefulset.Namespace,
-			AvailableInstance: fmt.Sprintf("%d/%d", statefulset.Status.AvailableReplicas, *statefulset.Spec.Replicas),
-			Labels:            statefulset.Labels,
-		})
-	}
-	mcpOutput, err := json.MarshalIndent(output, "", " ")
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
-	}
-	return mcp.NewToolResultText(string(mcpOutput)), nil
-}
-
 func ListStatefulset(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	ns := request.GetString("namespace", "")
 	labels := request.GetString("label", "")
-
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
-	namespaces, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in listing namespace: %v", err)), nil
-	}
 	var output []stsData
-	for _, namespace := range namespaces.Items {
-		statefulsets, err := clientset.AppsV1().StatefulSets(namespace.Name).List(context.TODO(), metav1.ListOptions{
+	if ns == "" {
+		namespaces, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
+		if err != nil {
+			return mcp.NewToolResultText(fmt.Sprintf("Error in listing namespace: %v", err)), nil
+		}
+		for _, namespace := range namespaces.Items {
+			statefulsets, err := clientset.AppsV1().StatefulSets(namespace.Name).List(context.TODO(), metav1.ListOptions{
+				LabelSelector: labels,
+			})
+			if err != nil {
+				return mcp.NewToolResultText(fmt.Sprintf("Error in listing statefulset in %s: %v", namespace.Name, err)), nil
+			}
+			for _, statefulset := range statefulsets.Items {
+				output = append(output, stsData{
+					Name:              statefulset.Name,
+					Namespace:         statefulset.Namespace,
+					AvailableInstance: fmt.Sprintf("%d/%d", statefulset.Status.AvailableReplicas, *statefulset.Spec.Replicas),
+					Labels:            statefulset.Labels,
+				})
+			}
+		}
+		mcpOutput, err := json.MarshalIndent(output, "", " ")
+		if err != nil {
+			return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
+		}
+		return mcp.NewToolResultText(string(mcpOutput)), nil
+	} else {
+		statefulsets, err := clientset.AppsV1().StatefulSets(ns).List(context.TODO(), metav1.ListOptions{
 			LabelSelector: labels,
 		})
 		if err != nil {
-			return mcp.NewToolResultText(fmt.Sprintf("Error in listing statefulset in %s: %v", namespace.Name, err)), nil
+			return mcp.NewToolResultText(fmt.Sprintf("Error in listing statefulset in %s: %v", ns, err)), nil
 		}
 		for _, statefulset := range statefulsets.Items {
 			output = append(output, stsData{
@@ -86,12 +72,12 @@ func ListStatefulset(ctx context.Context, request mcp.CallToolRequest) (*mcp.Cal
 				Labels:            statefulset.Labels,
 			})
 		}
+		mcpOutput, err := json.MarshalIndent(output, "", " ")
+		if err != nil {
+			return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
+		}
+		return mcp.NewToolResultText(string(mcpOutput)), nil
 	}
-	mcpOutput, err := json.MarshalIndent(output, "", " ")
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
-	}
-	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
 func GetStatefulset(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -105,7 +91,7 @@ func GetStatefulset(ctx context.Context, request mcp.CallToolRequest) (*mcp.Call
 		output := fmt.Sprintf("Provide names for statefulset")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -148,7 +134,7 @@ func DeleteStatefulset(ctx context.Context, request mcp.CallToolRequest) (*mcp.C
 		output := fmt.Sprintf("Provide name for statefulset")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -177,7 +163,7 @@ func UpdateStatefulset(ctx context.Context, request mcp.CallToolRequest) (*mcp.C
 	image := request.GetString("image", "")
 	containerName := request.GetString("containerName", "")
 	replica := request.GetInt("replica", -1)
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -306,7 +292,7 @@ func CreateStatefulset(ctx context.Context, request mcp.CallToolRequest) (*mcp.C
 	pvcName := request.GetString("pvcName", name)
 	svcPort := request.GetInt("svcPort", 8080)
 	svcType := request.GetString("svcType", "ClusterIP")
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -415,36 +401,4 @@ func CreateStatefulset(ctx context.Context, request mcp.CallToolRequest) (*mcp.C
 	}
 	output := fmt.Sprintf("Successfully statefulset %s/%s is created with service %s", deployStatefulset.Namespace, deployStatefulset.Name, deployService.Name)
 	return mcp.NewToolResultText(string(output)), nil
-}
-
-func CreateStatefulsetWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	jsondata, err := request.RequireString("jsondata")
-	if err != nil {
-		output := fmt.Sprintf("Provide jsonData for statefulset")
-		return mcp.NewToolResultText(string(output)), nil
-	}
-	_, dynamicClient, _, err := client.InitializeClients()
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
-	}
-	resourceId := schema.GroupVersionResource{
-		Group:    "apps",
-		Version:  "v1",
-		Resource: "statefulsets",
-	}
-
-	var obj map[string]interface{}
-	if err := json.Unmarshal([]byte(jsondata), &obj); err != nil {
-		return nil, err
-	}
-
-	unstructuredObj := &unstructured.Unstructured{Object: obj}
-
-	ns := unstructuredObj.GetNamespace()
-
-	_, err = dynamicClient.Resource(resourceId).Namespace(ns).Create(ctx, unstructuredObj, metav1.CreateOptions{})
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in creating statefulset with jsondata in %s namespace: %v", ns, err)), nil
-	}
-	return mcp.NewToolResultText(fmt.Sprintf("Successfully created statefulset with jsondata in %s namespace", ns)), nil
 }

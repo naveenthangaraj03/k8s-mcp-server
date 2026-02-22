@@ -54,7 +54,7 @@ func Custom(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResu
 
 	res, err := client.CustomTool(context.Background(), req)
 	if err != nil {
-		output := fmt.Sprintf("Failed to get response from server:", err)
+		output := fmt.Sprintf("Failed to get response from  grpc server:", err)
 		return mcp.NewToolResultText(string(output)), nil
 	}
 

@@ -7,11 +7,6 @@ The list of field available to create configmap:
 - Name: Required field
 - Data: Required field(If there are more than one data just separate by ",". Ex: password=Passw0rd@123,username=admin)
 
-### Create With Json
-
-The list of fields available to create the configmap:
-- JsonData: Required field
-
 ### List
 
 The list of fields available to list configmap in particular namespace:

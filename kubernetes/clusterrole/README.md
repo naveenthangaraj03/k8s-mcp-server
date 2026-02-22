@@ -13,8 +13,3 @@ The list of fields available to get the cluster role:
 
 The list of fields available to delete the cluster role:
 - Name: Required field
-
-### Create With Json
-
-The list of fields available to create the cluster role:
-- JsonData: Required field

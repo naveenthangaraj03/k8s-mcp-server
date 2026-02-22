@@ -7,11 +7,6 @@ The list of field available to create serviceAccount:
 - Name: Required field
 - Label: Optional field
 
-### Create With Json
-
-The list of fields available to create the serviceaccount:
-- JsonData: Required field
-
 ### List
 
 The list of fields available to list servcieaccount in particular namespace:
