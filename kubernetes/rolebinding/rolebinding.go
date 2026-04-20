@@ -7,8 +7,6 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/naveenthangaraj03/k8s-mcp-server/kubernetes/client"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type rbData struct {
@@ -31,62 +29,53 @@ type subjects struct {
 	Namespace string `json:"namespace,omitempty"`
 }
 
-func ListRBInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	ns, err := request.RequireString("namespace")
-	if err != nil {
-		output := fmt.Sprintf("Provide namespace for rolebinding")
-		return mcp.NewToolResultText(string(output)), nil
-	}
-	clientset, _, _, err := client.InitializeClients()
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
-	}
-	rbs, err := clientset.RbacV1().RoleBindings(ns).List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in listing rolebinding in %s: %v", ns, err)), nil
-	}
-	var output []rbData
-	for _, rb := range rbs.Items {
-		output = append(output, rbData{
-			Name:      rb.Name,
-			Namespace: rb.Namespace,
-		})
-	}
-	mcpOutput, err := json.MarshalIndent(output, "", " ")
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
-	}
-	return mcp.NewToolResultText(string(mcpOutput)), nil
-}
-
 func ListRB(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	clientset, _, _, err := client.InitializeClients()
+	ns := request.GetString("namespace", "")
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
-	namespaces, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in listing namespace: %v", err)), nil
-	}
 	var output []rbData
-	for _, namespace := range namespaces.Items {
-		rbs, err := clientset.RbacV1().RoleBindings(namespace.Name).List(context.TODO(), metav1.ListOptions{})
+	if ns == "" {
+		namespaces, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
-			return mcp.NewToolResultText(fmt.Sprintf("Error in listing rolebinding in namespace %s: %v", namespace.Name, err)), nil
+			return mcp.NewToolResultText(fmt.Sprintf("Error in listing namespace: %v", err)), nil
 		}
+		for _, namespace := range namespaces.Items {
+			rbs, err := clientset.RbacV1().RoleBindings(namespace.Name).List(context.TODO(), metav1.ListOptions{})
+			if err != nil {
+				return mcp.NewToolResultText(fmt.Sprintf("Error in listing rolebinding in namespace %s: %v", namespace.Name, err)), nil
+			}
 
+			for _, rb := range rbs.Items {
+				output = append(output, rbData{
+					Name:      rb.Name,
+					Namespace: rb.Namespace,
+				})
+			}
+		}
+		mcpOutput, err := json.MarshalIndent(output, "", " ")
+		if err != nil {
+			return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
+		}
+		return mcp.NewToolResultText(string(mcpOutput)), nil
+	} else {
+		rbs, err := clientset.RbacV1().RoleBindings(ns).List(context.TODO(), metav1.ListOptions{})
+		if err != nil {
+			return mcp.NewToolResultText(fmt.Sprintf("Error in listing rolebinding in %s: %v", ns, err)), nil
+		}
 		for _, rb := range rbs.Items {
 			output = append(output, rbData{
 				Name:      rb.Name,
 				Namespace: rb.Namespace,
 			})
 		}
+		mcpOutput, err := json.MarshalIndent(output, "", " ")
+		if err != nil {
+			return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
+		}
+		return mcp.NewToolResultText(string(mcpOutput)), nil
 	}
-	mcpOutput, err := json.MarshalIndent(output, "", " ")
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
-	}
-	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
 func GetRB(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -100,7 +89,7 @@ func GetRB(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResul
 		output := fmt.Sprintf("Provide name for rolebinding")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -152,7 +141,7 @@ func DeleteRB(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRe
 		output := fmt.Sprintf("Provide name for rolebinding")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -161,36 +150,4 @@ func DeleteRB(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRe
 		return mcp.NewToolResultText(fmt.Sprintf("Error in deleting rolebinding %s/%s: %v", ns, name, err)), nil
 	}
 	return mcp.NewToolResultText(fmt.Sprintf("Successfully deleted rolebinding %s/%s", ns, name)), nil
-}
-
-func CreateRBWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	jsondata, err := request.RequireString("jsondata")
-	if err != nil {
-		output := fmt.Sprintf("Provide jsonData for rolebinding")
-		return mcp.NewToolResultText(string(output)), nil
-	}
-	_, dynamicClient, _, err := client.InitializeClients()
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
-	}
-	resourceId := schema.GroupVersionResource{
-		Group:    "rbac.authorization.k8s.io",
-		Version:  "v1",
-		Resource: "rolebindings",
-	}
-
-	var obj map[string]interface{}
-	if err := json.Unmarshal([]byte(jsondata), &obj); err != nil {
-		return nil, err
-	}
-
-	unstructuredObj := &unstructured.Unstructured{Object: obj}
-
-	ns := unstructuredObj.GetNamespace()
-
-	_, err = dynamicClient.Resource(resourceId).Namespace(ns).Create(ctx, unstructuredObj, metav1.CreateOptions{})
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in creating rolebinding with jsondata in %s namespace: %v", ns, err)), nil
-	}
-	return mcp.NewToolResultText(fmt.Sprintf("Successfully created rolebinding with jsondata in %s namespace", ns)), nil
 }

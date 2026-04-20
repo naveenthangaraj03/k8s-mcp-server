@@ -9,8 +9,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"strconv"
 	"strings"
 )
@@ -24,58 +22,46 @@ type daemonsetData struct {
 	ContainerImage    []string          `json:"containerImage,omitempty"`
 }
 
-func ListDaemonsetInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	ns, err := request.RequireString("namespace")
-	if err != nil {
-		output := fmt.Sprintf("Provide namespace for daemonset")
-		return mcp.NewToolResultText(string(output)), nil
-	}
-	labels := request.GetString("label", "")
-
-	clientset, _, _, err := client.InitializeClients()
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
-	}
-	daemonsets, err := clientset.AppsV1().DaemonSets(ns).List(context.TODO(), metav1.ListOptions{
-		LabelSelector: labels,
-	})
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in listing daemonsets in %s: %v", ns, err)), nil
-	}
-	var output []daemonsetData
-	for _, daemonset := range daemonsets.Items {
-		output = append(output, daemonsetData{
-			Name:              daemonset.Name,
-			Namespace:         daemonset.Namespace,
-			AvailableInstance: fmt.Sprintf("%d/%d", daemonset.Status.NumberReady, daemonset.Status.UpdatedNumberScheduled),
-			Labels:            daemonset.Labels,
-		})
-	}
-	mcpOutput, err := json.MarshalIndent(output, "", " ")
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
-	}
-	return mcp.NewToolResultText(string(mcpOutput)), nil
-}
-
 func ListDaemonset(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	ns := request.GetString("namespace", "")
 	labels := request.GetString("label", "")
-
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
-	namespaces, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in listing namespace: %v", err)), nil
-	}
 	var output []daemonsetData
-	for _, namespace := range namespaces.Items {
-		daemonsets, err := clientset.AppsV1().DaemonSets(namespace.Name).List(context.TODO(), metav1.ListOptions{
+	if ns == "" {
+		namespaces, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
+		if err != nil {
+			return mcp.NewToolResultText(fmt.Sprintf("Error in listing namespace: %v", err)), nil
+		}
+		for _, namespace := range namespaces.Items {
+			daemonsets, err := clientset.AppsV1().DaemonSets(namespace.Name).List(context.TODO(), metav1.ListOptions{
+				LabelSelector: labels,
+			})
+			if err != nil {
+				return mcp.NewToolResultText(fmt.Sprintf("Error in listing daemonsets in %s namespace: %v", namespace.Name, err)), nil
+			}
+			for _, daemonset := range daemonsets.Items {
+				output = append(output, daemonsetData{
+					Name:              daemonset.Name,
+					Namespace:         daemonset.Namespace,
+					AvailableInstance: fmt.Sprintf("%d/%d", daemonset.Status.NumberReady, daemonset.Status.UpdatedNumberScheduled),
+					Labels:            daemonset.Labels,
+				})
+			}
+		}
+		mcpOutput, err := json.MarshalIndent(output, "", " ")
+		if err != nil {
+			return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
+		}
+		return mcp.NewToolResultText(string(mcpOutput)), nil
+	} else {
+		daemonsets, err := clientset.AppsV1().DaemonSets(ns).List(context.TODO(), metav1.ListOptions{
 			LabelSelector: labels,
 		})
 		if err != nil {
-			return mcp.NewToolResultText(fmt.Sprintf("Error in listing daemonsets in %s: %v", namespace.Name, err)), nil
+			return mcp.NewToolResultText(fmt.Sprintf("Error in listing daemonsets in %s namespace: %v", ns, err)), nil
 		}
 		for _, daemonset := range daemonsets.Items {
 			output = append(output, daemonsetData{
@@ -85,12 +71,12 @@ func ListDaemonset(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallT
 				Labels:            daemonset.Labels,
 			})
 		}
+		mcpOutput, err := json.MarshalIndent(output, "", " ")
+		if err != nil {
+			return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
+		}
+		return mcp.NewToolResultText(string(mcpOutput)), nil
 	}
-	mcpOutput, err := json.MarshalIndent(output, "", " ")
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
-	}
-	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
 func GetDaemonset(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -104,13 +90,13 @@ func GetDaemonset(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTo
 		output := fmt.Sprintf("Provide name for daemonset")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
 	daemonset, err := clientset.AppsV1().DaemonSets(ns).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in getting daemonsets in %s/%s: %v", ns, name, err)), nil
+		return mcp.NewToolResultText(fmt.Sprintf("Error in getting daemonset in %s/%s: %v", ns, name, err)), nil
 	}
 
 	var cName []string
@@ -147,13 +133,13 @@ func DeleteDaemonset(ctx context.Context, request mcp.CallToolRequest) (*mcp.Cal
 		output := fmt.Sprintf("Provide name for daemonset")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
 	err = clientset.AppsV1().DaemonSets(ns).Delete(context.TODO(), name, metav1.DeleteOptions{})
 	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in deleting daemonsets in %s: %v", ns, err)), nil
+		return mcp.NewToolResultText(fmt.Sprintf("Error in deleting daemonset in %s: %v", ns, err)), nil
 	}
 	output := fmt.Sprintf("Daemonset %s/%s is deleted", ns, name)
 	return mcp.NewToolResultText(string(output)), nil
@@ -174,13 +160,13 @@ func UpdateDaemonset(ctx context.Context, request mcp.CallToolRequest) (*mcp.Cal
 	annotation := request.GetString("annotation", "")
 	image := request.GetString("image", "")
 	containerName := request.GetString("containerName", "")
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
 	daemonset, err := clientset.AppsV1().DaemonSets(ns).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in getting daemonsets in %s/%s: %v", ns, name, err)), nil
+		return mcp.NewToolResultText(fmt.Sprintf("Error in getting daemonset in %s/%s: %v", ns, name, err)), nil
 	}
 	if labels != "" {
 		m := make(map[string]string)
@@ -283,7 +269,7 @@ func CreateDaemonset(ctx context.Context, request mcp.CallToolRequest) (*mcp.Cal
 		return mcp.NewToolResultText(string(output)), nil
 	}
 	containerPorts := request.GetString("containerPorts", "http:8080")
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -375,36 +361,4 @@ func CreateDaemonset(ctx context.Context, request mcp.CallToolRequest) (*mcp.Cal
 	}
 	output := fmt.Sprintf("Successfully daemonset %s/%s is created", deployDaemonset.Namespace, deployDaemonset.Name)
 	return mcp.NewToolResultText(string(output)), nil
-}
-
-func CreateDaemonsetWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	jsondata, err := request.RequireString("jsondata")
-	if err != nil {
-		output := fmt.Sprintf("Provide jsonData for daemonset")
-		return mcp.NewToolResultText(string(output)), nil
-	}
-	_, dynamicClient, _, err := client.InitializeClients()
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
-	}
-	resourceId := schema.GroupVersionResource{
-		Group:    "apps",
-		Version:  "v1",
-		Resource: "daemonsets",
-	}
-
-	var obj map[string]interface{}
-	if err := json.Unmarshal([]byte(jsondata), &obj); err != nil {
-		return nil, err
-	}
-
-	unstructuredObj := &unstructured.Unstructured{Object: obj}
-
-	ns := unstructuredObj.GetNamespace()
-
-	_, err = dynamicClient.Resource(resourceId).Namespace(ns).Create(ctx, unstructuredObj, metav1.CreateOptions{})
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in creating daemonset with jsondata in %s namespace: %v", ns, err)), nil
-	}
-	return mcp.NewToolResultText(fmt.Sprintf("Successfully created daemonset with jsondata in %s namespace", ns)), nil
 }

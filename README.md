@@ -18,14 +18,14 @@ k8s-mcp-server is a Golang based Model Context Protocol (MCP) server that expose
 - ServiceAccount: Create, Get, List and Delete.
 - PVC: Create, Get, List, Update and Delete.
 - PV: List, Get and Delete.
-- Role: Create, Get, List and Delete.
-- RoleBinding: Create, Get, List and Delete.
-- ClusterRole: Create, Get, List and Delete.
-- ClusterRoleBinding: Create, Get, List and Delete.
-- Storageclass: Create, Get, List and Delete.
+- Role: Get, List and Delete.
+- RoleBinding: Get, List and Delete.
+- ClusterRole: Get, List and Delete.
+- ClusterRoleBinding: Get, List and Delete.
+- Storageclass: Get, List and Delete.
 - CRD: Create, Get, List and Delete.
 
-Create supports json data as well.
+Create any kubernetes resource by passing json data.
 
 All interactions are performed via Kubernetes API using the provided kubeconfig.
 
@@ -61,14 +61,14 @@ go install github.com/naveenthangaraj03/k8s-mcp-server@latest
 ## Running MCP Server
 
 Claude Desktop:
-Add the following configuration to yours claude config file.
+Add the following configuration to yours claude config file. If you are running MCP Server as local setup.
 
 ```
 {
     "mcpServers": {
         "Kubernetes": {
             "command": "k8s-mcp-server",
-            "args": ["--kubeconfigPath=<Path to kubeconfig file>"]
+            "args": ["--kubeconfigPath=<Path to kubeconfig file>", "--mode=stdio"]
         }
     }
 }
@@ -81,9 +81,22 @@ Enable the custom tool by using the `--customURL` flag.
     "mcpServers": {
         "Kubernetes": {
             "command": "k8s-mcp-server",
-            "args": ["--kubeconfigPath=<Path to kubeconfig file>","--customURL=<grpc server url>"]
+            "args": ["--kubeconfigPath=<Path to kubeconfig file>","--customURL=<grpc server url>", "--mode=stdio"]
         }
     }
+}
+```
+
+Cursor:
+Add the following configuration to yours cursor. If you are running MCP Server as remote setup.
+
+```
+{
+  "mcpServers": {
+    "kuberentes": {
+      "url": "<URL for remote mcp server>/mcp"
+    }
+  }
 }
 ```
 

@@ -13,8 +13,3 @@ The list of fields available to get the StorageClass:
 
 The list of fields available to delete the storageclas:
 - Name: Required field
-
-### Create With Json
-
-The list of fields available to create the storageclass:
-- JsonData: Required field

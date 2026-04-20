@@ -18,8 +18,3 @@ The list of fields available to get the role in particular namespace:
 The list of fields available to delete the role in particular namespace:
 - Name: Required field
 - Namespace: Required field
-
-### Create With Json
-
-The list of fields available to create the role:
-- JsonData: Required field

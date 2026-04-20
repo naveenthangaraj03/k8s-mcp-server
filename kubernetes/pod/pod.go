@@ -9,8 +9,6 @@ import (
 	"io"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"strconv"
 	"strings"
 )
@@ -23,60 +21,47 @@ type podData struct {
 	ContainerName []string          `json:"containerNames,omitempty"`
 }
 
-func ListPodInNS(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	ns, err := request.RequireString("namespace")
-	if err != nil {
-		output := fmt.Sprintf("Provide namespace for pod")
-		return mcp.NewToolResultText(string(output)), nil
-	}
-	labels := request.GetString("label", "")
-
-	clientset, _, _, err := client.InitializeClients()
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
-	}
-	pods, err := clientset.CoreV1().Pods(ns).List(context.TODO(), metav1.ListOptions{
-		LabelSelector: labels,
-	})
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in listing pods in %s: %v", ns, err)), nil
-	}
-	var output []podData
-	for _, pod := range pods.Items {
-		output = append(output, podData{
-			Name:      pod.Name,
-			Namespace: pod.Namespace,
-			Status:    string(pod.Status.Phase),
-			Labels:    pod.Labels,
-		})
-	}
-	mcpOutput, err := json.MarshalIndent(output, "", " ")
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
-	}
-	return mcp.NewToolResultText(string(mcpOutput)), nil
-}
-
 func ListPod(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	ns := request.GetString("namespace", "")
 	labels := request.GetString("label", "")
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
-	namespaces, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in listing namespace: %v", err)), nil
-	}
-
 	var output []podData
-	for _, namespace := range namespaces.Items {
-		pods, err := clientset.CoreV1().Pods(namespace.Name).List(context.TODO(), metav1.ListOptions{
+	if ns == "" {
+		namespaces, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
+		if err != nil {
+			return mcp.NewToolResultText(fmt.Sprintf("Error in listing namespace: %v", err)), nil
+		}
+		for _, namespace := range namespaces.Items {
+			pods, err := clientset.CoreV1().Pods(namespace.Name).List(context.TODO(), metav1.ListOptions{
+				LabelSelector: labels,
+			})
+			if err != nil {
+				return mcp.NewToolResultText(fmt.Sprintf("Error in listing pod in %s: %v", namespace.Name, err)), nil
+			}
+			for _, pod := range pods.Items {
+				output = append(output, podData{
+					Name:      pod.Name,
+					Namespace: pod.Namespace,
+					Status:    string(pod.Status.Phase),
+					Labels:    pod.Labels,
+				})
+			}
+		}
+		mcpOutput, err := json.MarshalIndent(output, "", " ")
+		if err != nil {
+			return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
+		}
+		return mcp.NewToolResultText(string(mcpOutput)), nil
+	} else {
+		pods, err := clientset.CoreV1().Pods(ns).List(context.TODO(), metav1.ListOptions{
 			LabelSelector: labels,
 		})
 		if err != nil {
-			return mcp.NewToolResultText(fmt.Sprintf("Error in listing pod in %s: %v", namespace.Name, err)), nil
+			return mcp.NewToolResultText(fmt.Sprintf("Error in listing pods in %s: %v", ns, err)), nil
 		}
-
 		for _, pod := range pods.Items {
 			output = append(output, podData{
 				Name:      pod.Name,
@@ -85,12 +70,12 @@ func ListPod(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolRes
 				Labels:    pod.Labels,
 			})
 		}
+		mcpOutput, err := json.MarshalIndent(output, "", " ")
+		if err != nil {
+			return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
+		}
+		return mcp.NewToolResultText(string(mcpOutput)), nil
 	}
-	mcpOutput, err := json.MarshalIndent(output, "", " ")
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in marshalling: %v", err)), nil
-	}
-	return mcp.NewToolResultText(string(mcpOutput)), nil
 }
 
 func GetPod(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -104,7 +89,7 @@ func GetPod(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResu
 		output := fmt.Sprintf("Provide name for pod")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -145,7 +130,7 @@ func DeletePod(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolR
 		output := fmt.Sprintf("Provide name for pod")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -173,7 +158,7 @@ func UpdatePod(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolR
 		output := fmt.Sprintf("Provide label for pod")
 		return mcp.NewToolResultText(string(output)), nil
 	}
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -223,7 +208,7 @@ func CreatePod(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolR
 		return mcp.NewToolResultText(string(output)), nil
 	}
 	containerPorts := request.GetString("containerPorts", "http:8080")
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -325,7 +310,7 @@ func PodLog(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResu
 		Container: containerName,
 		TailLines: &count,
 	}
-	clientset, _, _, err := client.InitializeClients()
+	clientset, _, _, _, err := client.InitializeClients()
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
 	}
@@ -342,36 +327,4 @@ func PodLog(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResu
 		return mcp.NewToolResultText(string(output)), nil
 	}
 	return mcp.NewToolResultText(string(body)), nil
-}
-
-func CreatePodWithJson(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	jsondata, err := request.RequireString("jsondata")
-	if err != nil {
-		output := fmt.Sprintf("Provide jsonData for pod")
-		return mcp.NewToolResultText(string(output)), nil
-	}
-	_, dynamicClient, _, err := client.InitializeClients()
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in intialize client: %v", err)), nil
-	}
-	resourceId := schema.GroupVersionResource{
-		Group:    "",
-		Version:  "v1",
-		Resource: "pods",
-	}
-
-	var obj map[string]interface{}
-	if err := json.Unmarshal([]byte(jsondata), &obj); err != nil {
-		return nil, err
-	}
-
-	unstructuredObj := &unstructured.Unstructured{Object: obj}
-
-	ns := unstructuredObj.GetNamespace()
-
-	_, err = dynamicClient.Resource(resourceId).Namespace(ns).Create(ctx, unstructuredObj, metav1.CreateOptions{})
-	if err != nil {
-		return mcp.NewToolResultText(fmt.Sprintf("Error in creating pod with jsondata in %s namespace: %v", ns, err)), nil
-	}
-	return mcp.NewToolResultText(fmt.Sprintf("Successsfully createdpod with jsondata in %s namespace", ns)), nil
 }
